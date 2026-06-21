@@ -1,4 +1,5 @@
 import { getDb } from "../libs/firebase/firebase";
+import { logger } from "../utils/logger";
 
 // https://omacy.medium.com/implementing-the-repository-design-pattern-in-node-js-express-a-complete-guide-354cfadc22a0
 
@@ -15,7 +16,7 @@ export class BaseRepository {
 
   async create(data: any): Promise<any> {
     const docRef = this.getCollection().doc();
-    const now = new Date().toISOString()
+    const now = new Date().toISOString();
 
     const newItem = {
       ...data,
@@ -29,7 +30,6 @@ export class BaseRepository {
 
   async findById(id: string): Promise<any> {
     const doc = await this.getCollection().doc(id).get();
-    if (!doc.exists) return null;
     return doc.data();
   }
 
@@ -46,7 +46,7 @@ export class BaseRepository {
   }
 
   async update(id: string, data: any) {
-    const now = new Date().toISOString()
+    const now = new Date().toISOString();
     const updateData = {
       ...data,
       updatedAt: now,

@@ -1,3 +1,5 @@
+import { Timestamp } from "@google-cloud/firestore";
+
 export interface Board {
   id: string;
   name: string;
@@ -7,6 +9,6 @@ export interface Board {
   listMembers: {
     [userId: string]: "owner" | "accepted" | "pending";
   };
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
 }

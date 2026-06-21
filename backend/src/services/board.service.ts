@@ -31,4 +31,8 @@ export class BoardService {
   async getAllBoards(): Promise<Board[]> {
     return await this.boardRepository.findAll();
   }
+
+  async getBoardById(id: string): Promise<Board | null> {
+    return await this.boardRepository.findById(id);
+  }
 }

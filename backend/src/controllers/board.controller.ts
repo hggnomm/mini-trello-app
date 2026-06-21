@@ -26,4 +26,18 @@ export class BoardController {
       res.status(500).json({ error: error.message });
     }
   };
+
+  getBoardById = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const board = await this.boardService.getBoardById(id);
+      if (!board) {
+        res.status(404).json({ msg: "Board not found" });
+        return;
+      }
+      res.status(200).json(board);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  };
 }
