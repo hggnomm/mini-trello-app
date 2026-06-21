@@ -15,7 +15,7 @@ export function createApp(): Express {
     app.get('/health', async (req: Request, res: Response) => {
         const db = await checkConnection();
         try {
-            res.status(200).json({ status: 'up', db: db ? "Connected" : "Disconnect" });
+            res.status(200).json({ status: 'up', db: db });
         } catch (error) {
             res.status(500).json({ status: 'error', db: "Error connect to Firestore" });
         }
