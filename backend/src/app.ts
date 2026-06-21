@@ -1,6 +1,7 @@
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import { checkConnection, getDb } from './libs/firebase/firebase';
+import { getGithubConnection } from './libs/github/github';
 
 export function createApp(): Express {
     const app = express();
@@ -14,8 +15,9 @@ export function createApp(): Express {
 
     app.get('/health', async (req: Request, res: Response) => {
         const db = await checkConnection();
+        const github = await getGithubConnection();
         try {
-            res.status(200).json({ status: 'up', db: db });
+            res.status(200).json({ status: 'up', db: db, github: github.login ?? "Not connected" });
         } catch (error) {
             res.status(500).json({ status: 'error', db: "Error connect to Firestore" });
         }
