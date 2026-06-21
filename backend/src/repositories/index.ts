@@ -1,5 +1,4 @@
 import { getDb } from "../libs/firebase/firebase";
-import { logger } from "../utils/logger";
 
 // https://omacy.medium.com/implementing-the-repository-design-pattern-in-node-js-express-a-complete-guide-354cfadc22a0
 
@@ -19,6 +18,7 @@ export class BaseRepository {
     const now = new Date().toISOString();
 
     const newItem = {
+      id: docRef.id,
       ...data,
       createdAt: now,
       updatedAt: now,
@@ -35,27 +35,27 @@ export class BaseRepository {
 
   async findAll(): Promise<any[]> {
     const snapshot = await this.getCollection().get();
-
     const items: any[] = [];
-
     snapshot.forEach((doc) => {
-      items.push(doc.data());
+      const data = doc.data();
+      if (data) {
+        items.push(data);
+      }
     });
-
     return items;
   }
 
-  async update(id: string, data: any) {
+  async update(id: string, data: any): Promise<any> {
     const now = new Date().toISOString();
     const updateData = {
       ...data,
       updatedAt: now,
     };
-
     await this.getCollection().doc(id).update(updateData);
+    return this.findById(id);
   }
 
-  async delete(id: string) {
+  async delete(id: string): Promise<void> {
     await this.getCollection().doc(id).delete();
   }
 }

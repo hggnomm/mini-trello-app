@@ -35,4 +35,8 @@ export class BoardService {
   async getBoardById(id: string): Promise<Board | null> {
     return await this.boardRepository.findById(id);
   }
+
+  async updateBoardById(id: string, data: Partial<Board>): Promise<Board> {
+    return await this.boardRepository.update(id, data);
+  }
 }
