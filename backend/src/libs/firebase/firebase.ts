@@ -1,5 +1,6 @@
-const path = require('path');
-const Firestore = require('@google-cloud/firestore');
+import path from 'path';
+import { Firestore } from '@google-cloud/firestore';
+import { logger } from '../../utils/logger';
 
 const db = new Firestore({
   projectId: 'mini-trello-app-d5f1c',
@@ -13,10 +14,10 @@ export const getDb = () => {
 export const checkConnection = async () =>  {
   try {
     await db.collection('users').get();
-    console.log("Connected to Firestore");
+    logger.info("Connected to Firestore");
     return "Connected";
   } catch (error) {
-    console.error("Error connecting to Firestore:", error);
+    logger.error(error, "Error connecting to Firestore");
     return "Disconnect, error: " + error;
   }
 }

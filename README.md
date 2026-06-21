@@ -27,7 +27,7 @@ A beautiful, modern, full-stack monorepo starter configuration for a **Mini Trel
     ```bash
     npm run start:backend
     ```
-    Runs Express app on port `3000`.
+    Runs Express app on port `8000`.
 
 4.  **Run All Tests**:
     ```bash
