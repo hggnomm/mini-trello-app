@@ -1,4 +1,3 @@
-import { Timestamp } from "@google-cloud/firestore";
 import { getDb } from "../libs/firebase/firebase";
 
 // https://omacy.medium.com/implementing-the-repository-design-pattern-in-node-js-express-a-complete-guide-354cfadc22a0
@@ -16,7 +15,7 @@ export class BaseRepository {
 
   async create(data: any): Promise<any> {
     const docRef = this.getCollection().doc();
-    const now = Timestamp.now();
+    const now = new Date().toISOString()
 
     const newItem = {
       ...data,
@@ -47,7 +46,7 @@ export class BaseRepository {
   }
 
   async update(id: string, data: any) {
-    const now = Timestamp.now();
+    const now = new Date().toISOString()
     const updateData = {
       ...data,
       updatedAt: now,

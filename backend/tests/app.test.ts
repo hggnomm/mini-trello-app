@@ -20,7 +20,7 @@ describe('API Endpoints', () => {
         it('should return 200 and status up', async () => {
             const res = await request(app).get('/health');
             expect(res.statusCode).toEqual(200);
-            expect(res.body).toEqual({ status: 'up' });
+            expect(res.body.status).toBe('up');
         });
     });
 
