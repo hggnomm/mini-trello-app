@@ -55,7 +55,7 @@ export class BaseRepository {
     return this.findById(id);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string): Promise<any> {
     await this.getCollection().doc(id).delete();
   }
 }

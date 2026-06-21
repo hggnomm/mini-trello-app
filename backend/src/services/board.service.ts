@@ -39,4 +39,8 @@ export class BoardService {
   async updateBoardById(id: string, data: Partial<Board>): Promise<Board> {
     return await this.boardRepository.update(id, data);
   }
+
+  async deleteBoard(id: string): Promise<Board | null> {
+    return await this.boardRepository.delete(id);
+  }
 }
