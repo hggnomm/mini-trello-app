@@ -1,16 +1,19 @@
 import { Request, Response } from "express";
 import { BoardService, IBoardService } from "../services/board.service";
 import { Board } from "../models/board.model";
+import { getAuthenticatedUser } from "../utils/auth";
 
 export class BoardController {
   private boardService: IBoardService = new BoardService();
 
   createBoard = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { name, description, ownerId } = req.body;
+      const { name, description } = req.body;
+      const user = getAuthenticatedUser(req);
+
       const newBoard = await this.boardService.createBoard(
         name,
-        ownerId,
+        user.id,
         description,
       );
       res.status(201).json(newBoard);
@@ -21,7 +24,7 @@ export class BoardController {
 
   getAllBoards = async (req: Request, res: Response): Promise<void> => {
     try {
-      const boards = await this.boardService.getAllBoards();
+      const boards = await this.boardService.getAllBoardsCustom();
       res.status(200).json(boards);
     } catch (error: any) {
       res.status(500).json({ error: error.message });

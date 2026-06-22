@@ -6,7 +6,7 @@ export interface Board {
   description?: string;
   ownerId: string;
   githubRepositoryId?: string;
-  listMembers: {
+  listMembers?: {
     [userId: string]: "owner" | "accepted" | "pending";
   };
   createdAt?: Timestamp;
