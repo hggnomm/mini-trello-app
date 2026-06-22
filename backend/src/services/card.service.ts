@@ -1,5 +1,6 @@
 import { CardRepository } from "../repositories/card.repository";
 import { BoardRepository } from "../repositories/board.repository";
+import { TaskRepository } from "../repositories/task.repository";
 import { Card } from "../models/card.model";
 
 export interface CreateCardInput {
@@ -37,6 +38,7 @@ export interface ICardService {
 export class CardService implements ICardService {
   private cardRepository = new CardRepository();
   private boardRepository = new BoardRepository();
+  private taskRepository = new TaskRepository();
 
   async createCard(input: CreateCardInput): Promise<Card> {
     const { boardId, ownerId, name, description } = input;
@@ -95,14 +97,16 @@ export class CardService implements ICardService {
       userId,
     );
 
-    return cards.map((card) => ({
-      id: card.id,
-      name: card.name,
-      description: card.description,
-      tasks_count: 0, // update then
-      list_member: [], // update then
-      createdAt: card.createdAt ? String(card.createdAt) : "",
-    }));
+    return Promise.all(
+      cards.map(async (card) => ({
+        id: card.id,
+        name: card.name,
+        description: card.description,
+        tasks_count: await this.taskRepository.countByCardId(card.id),
+        list_member: [], // update then
+        createdAt: card.createdAt ? String(card.createdAt) : "",
+      })),
+    );
   }
 
   async updateCard(
