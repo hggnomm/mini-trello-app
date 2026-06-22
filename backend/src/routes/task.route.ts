@@ -7,7 +7,8 @@ const taskController = new TaskController();
 
 router.use(requireAuth);
 
-router.post("/:boardId/cards/:id/tasks", taskController.createCard);
-router.get("/:boardId/cards/:id/tasks", taskController.getAllTasks);
+router.post("/:boardId/cards/:cardId/tasks", taskController.createCard);
+router.get("/:boardId/cards/:cardId/tasks", taskController.getAllTasks);
+router.get("/:boardId/cards/:cardId/tasks/:taskId", taskController.getTaskById);
 
 export default router;

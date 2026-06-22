@@ -13,7 +13,7 @@ export class TaskController {
 
   createCard = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { boardId, id: cardId } = req.params;
+      const { boardId, cardId } = req.params;
       const { title, description, status } = req.body;
 
       const user = getAuthenticatedUser(req);
@@ -44,7 +44,7 @@ export class TaskController {
 
   getAllTasks = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { boardId, id: cardId } = req.params;
+      const { boardId, cardId } = req.params;
 
       getAuthenticatedUser(req);
 
@@ -57,7 +57,29 @@ export class TaskController {
         description: task.description,
         status: task.status,
       }));
-      
+
+      res.status(200).json(responseData);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  getTaskById = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { boardId, cardId, taskId } = req.params;
+
+      getAuthenticatedUser(req);
+
+      const task = await this.taskService.getTaskById(boardId, cardId, taskId);
+
+      const responseData = {
+        id: task.id,
+        cardId: task.cardId,
+        title: task.title,
+        description: task.description,
+        status: task.status,
+      };
+
       res.status(200).json(responseData);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
