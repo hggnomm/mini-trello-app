@@ -1,6 +1,5 @@
 import { CardRepository } from "../repositories/card.repository";
 import { BoardRepository } from "../repositories/board.repository";
-import { TaskRepository } from "../repositories/task.repository";
 import { Card } from "../models/card.model";
 
 export interface CreateCardInput {
@@ -27,12 +26,16 @@ export interface ICardService {
     boardId: string,
     userId: string,
   ): Promise<CardByUserResponse[]>;
+  updateCard(
+    boardId: string,
+    cardId: string,
+    data: Partial<Card>,
+  ): Promise<Card>;
 }
 
 export class CardService implements ICardService {
   private cardRepository = new CardRepository();
   private boardRepository = new BoardRepository();
-  private taskRepository = new TaskRepository();
 
   async createCard(input: CreateCardInput): Promise<Card> {
     const { boardId, ownerId, name, description } = input;
@@ -99,6 +102,23 @@ export class CardService implements ICardService {
       list_member: this.getListMembers(card),
       createdAt: card.createdAt ? String(card.createdAt) : "",
     }));
+  }
+
+  async updateCard(
+    boardId: string,
+    cardId: string,
+    data: Partial<Card>,
+  ): Promise<Card> {
+    if (!boardId) throw new Error("Board Id cannot be null");
+    if (!cardId) throw new Error("Card Id cannot be null");
+
+    const boardDoc = await this.boardRepository.findById(boardId);
+    if (!boardDoc) throw new Error("Board not found");
+
+    const card = await this.cardRepository.findById(cardId);
+    if (!card || card.boardId !== boardId) throw new Error("Card not found");
+
+    return await this.cardRepository.update(cardId, data);
   }
 
   private getListMembers(card: Card): string[] {

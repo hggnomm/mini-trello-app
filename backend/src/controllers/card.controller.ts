@@ -78,4 +78,26 @@ export class Cardcontroller {
       res.status(400).json({ error: error.message });
     }
   };
+
+  updateCardDetails = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { boardId, id } = req.params;
+
+      getAuthenticatedUser(req);
+
+      const updatedCard = await this.cardService.updateCard(
+        boardId,
+        id,
+        req.body,
+      );
+
+      res.status(200).json({
+        id: updatedCard.id,
+        name: updatedCard.name,
+        description: updatedCard.description,
+      });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
 }

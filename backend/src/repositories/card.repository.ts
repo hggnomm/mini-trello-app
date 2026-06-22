@@ -5,6 +5,7 @@ export class CardRepository extends BaseRepository {
   constructor() {
     super("cards");
   }
+
   async findCardsByBoardIdAndOwnerId(
     boardId: string,
     ownerId: string,
