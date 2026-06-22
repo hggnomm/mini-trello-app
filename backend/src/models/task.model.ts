@@ -9,7 +9,7 @@ export interface Task {
   description: string;
   status: string; // name Card
   assignedMembers: string[];
-  //   githubAttachments?: any[];
+  githubAttachments?: any[];
   order: number;
   createdAt?: string | Timestamp;
   updatedAt?: string | Timestamp;
