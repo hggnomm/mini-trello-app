@@ -1,7 +1,19 @@
 import { BoardRepository } from "../repositories/board.repository";
 import { Board } from "../models/board.model";
 
-export class BoardService {
+export interface IBoardService {
+  createBoard(
+    name: string,
+    ownerId: string,
+    description?: string,
+  ): Promise<Board>;
+  getAllBoards(): Promise<Board[]>;
+  getBoardById(id: string): Promise<Board | null>;
+  updateBoardById(id: string, data: Partial<Board>): Promise<Board>;
+  deleteBoard(id: string): Promise<Board | null>;
+}
+
+export class BoardService implements IBoardService {
   private boardRepository = new BoardRepository();
 
   async createBoard(

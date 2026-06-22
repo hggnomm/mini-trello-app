@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { BoardService } from "../services/board.service";
+import { BoardService, IBoardService } from "../services/board.service";
 import { Board } from "../models/board.model";
 
 export class BoardController {
-  private boardService = new BoardService();
+  private boardService: IBoardService = new BoardService();
 
   createBoard = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -58,7 +58,7 @@ export class BoardController {
 
       res
         .status(200)
-        .json({ updatedBoard, message: "Board updated successfully" });
+        .json({ updatedBoard, message: "Board successfully updated" });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
