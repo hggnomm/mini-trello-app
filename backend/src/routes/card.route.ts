@@ -9,6 +9,7 @@ router.use(requireAuth);
 
 router.post("/:boardId/cards", cardController.createCard);
 router.get("/:boardId/cards", cardController.getAllCards);
+router.get("/:boardId/cards/user/:userId", cardController.getCardsByUser);
 router.get("/:boardId/cards/:id", cardController.getCardById);
 
 export default router;

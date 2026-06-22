@@ -30,7 +30,7 @@ export class Cardcontroller {
   getAllCards = async (req: Request, res: Response): Promise<void> => {
     try {
       const { boardId } = req.params;
-      
+
       getAuthenticatedUser(req); 
 
       const cards = await this.cardService.getAllCards(boardId);
@@ -60,6 +60,20 @@ export class Cardcontroller {
         name: card.name,
         description: card.description,
       });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  getCardsByUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { boardId, userId } = req.params;
+
+      getAuthenticatedUser(req);
+
+      const cards = await this.cardService.getCardsByUser(boardId, userId);
+
+      res.status(200).json(cards);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }

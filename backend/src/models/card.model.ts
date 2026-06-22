@@ -6,6 +6,7 @@ export interface Card {
   description?: string;
   boardId: string;
   ownerId: string;
-  createdAt?: Timestamp;
-  updatedAt?: Timestamp;
+  listMembers?: string[];
+  createdAt?: Timestamp | string;
+  updatedAt?: Timestamp | string;
 }
