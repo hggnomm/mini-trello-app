@@ -1,3 +1,4 @@
+import { settings } from '../utils/settings';
 import { NextFunction, Request, Response } from "express";
 import jwt = require("jsonwebtoken");
 
@@ -19,7 +20,7 @@ export const requireAuth = (
 
     const decoded = jwt.verify(
       token,
-      process.env.JWT_SECRET || "123123123",
+      settings.JWT_SECRET,
     );
     req.user = decoded;
     next();

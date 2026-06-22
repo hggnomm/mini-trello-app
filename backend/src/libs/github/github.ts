@@ -1,14 +1,12 @@
 // https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api?apiVersion=2026-03-10
 // https://octokit.github.io/rest.js/v18/#usage
 
-const { Octokit } = require("@octokit/rest");
-const dotenv = require("dotenv");
-const path = require("path");
+import { settings } from '../../utils/settings';
 
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+const { Octokit } = require("@octokit/rest");
 
 const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
+  auth: settings.GITHUB_TOKEN,
 });
 
 // sends request with `Authorization: token mypersonalaccesstoken123` header

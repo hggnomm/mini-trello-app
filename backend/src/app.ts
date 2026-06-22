@@ -1,3 +1,4 @@
+import './utils/settings';
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import { checkConnection, getDb } from './libs/firebase/firebase';

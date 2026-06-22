@@ -1,7 +1,8 @@
+import { settings } from './utils/settings';
 import { createApp } from './app';
 import { logger } from './utils/logger';
 
-const port = process.env.PORT || 8000;
+const port = settings.PORT;
 
 const app = createApp();
 
