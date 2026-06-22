@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { AuthService, IAuthService } from "../services/auth.service";
+import { isEmail } from "../utils/email";
 
 export class AuthController {
   private authService: IAuthService = new AuthService();
@@ -30,6 +31,24 @@ export class AuthController {
       });
     } catch (error: any) {
       res.status(401).json({ error: error.message });
+    }
+  };
+
+  sendOTP = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { email } = req.body;
+
+      if (!isEmail(email)) {
+        throw new Error("Email format not true");
+      }
+
+      await this.authService.sendOTP(email);
+
+      res.status(200).json({
+        message: "OTP code sent to email successfully",
+      });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
     }
   };
 }
