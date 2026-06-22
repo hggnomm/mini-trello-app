@@ -18,7 +18,7 @@ export class BaseRepository {
     const now = new Date().toISOString();
 
     const newItem = {
-      id: docRef.id,
+      id: docRef.id, // !IMPORTANT
       ...data,
       createdAt: now,
       updatedAt: now,
