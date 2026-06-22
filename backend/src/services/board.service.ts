@@ -48,9 +48,7 @@ export class BoardService implements IBoardService {
       name: name,
       description: description || "",
       ownerId: ownerId,
-      listMembers: {
-        [ownerId]: "owner",
-      },
+      listMembers: {},
     };
 
     return await this.boardRepository.create(dataBoard);
@@ -121,8 +119,18 @@ export class BoardService implements IBoardService {
 
     email = user.email;
 
-    // set member in board list members, set pending status when invited us first
+    if (memberId === boardOwnerId) {
+      throw new Error("You cannot invite yourself to the board");
+    }
+
     const listMembers = board.listMembers || {};
+    const currentStatus = listMembers[memberId];
+
+    if (currentStatus === "accepted") {
+      throw new Error("User is already a member of this board");
+    }
+
+    // set member in board list members, set pending status when invited us first
     listMembers[memberId] = "pending";
 
     await this.boardRepository.update(boardId, { listMembers });
@@ -153,9 +161,7 @@ export class BoardService implements IBoardService {
     const listMembers = board.listMembers || {};
 
     if (listMembers[memberId] !== "pending") {
-      throw new Error(
-        "User not pending status",
-      );
+      throw new Error("User not pending status");
     }
 
     listMembers[memberId] = "accepted";
