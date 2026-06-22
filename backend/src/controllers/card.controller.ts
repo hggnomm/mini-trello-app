@@ -100,4 +100,18 @@ export class Cardcontroller {
       res.status(400).json({ error: error.message });
     }
   };
+
+  deleteCard = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { boardId, id } = req.params;
+
+      getAuthenticatedUser(req);
+
+      await this.cardService.deleteCard(boardId, id);
+
+      res.status(204).send();
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
 }

@@ -31,6 +31,7 @@ export interface ICardService {
     cardId: string,
     data: Partial<Card>,
   ): Promise<Card>;
+  deleteCard(boardId: string, cardId: string): Promise<void>;
 }
 
 export class CardService implements ICardService {
@@ -119,6 +120,19 @@ export class CardService implements ICardService {
     if (!card || card.boardId !== boardId) throw new Error("Card not found");
 
     return await this.cardRepository.update(cardId, data);
+  }
+
+  async deleteCard(boardId: string, cardId: string): Promise<void> {
+    if (!boardId) throw new Error("Board Id cannot be null");
+    if (!cardId) throw new Error("Card Id cannot be null");
+
+    const boardDoc = await this.boardRepository.findById(boardId);
+    if (!boardDoc) throw new Error("Board not found");
+
+    const card = await this.cardRepository.findById(cardId);
+    if (!card || card.boardId !== boardId) throw new Error("Card not found");
+
+    await this.cardRepository.delete(cardId);
   }
 
   private getListMembers(card: Card): string[] {

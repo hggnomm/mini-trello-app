@@ -12,5 +12,6 @@ router.get("/:boardId/cards", cardController.getAllCards);
 router.get("/:boardId/cards/user/:userId", cardController.getCardsByUser);
 router.get("/:boardId/cards/:id", cardController.getCardById);
 router.put("/:boardId/cards/:id", cardController.updateCardDetails);
+router.delete("/:boardId/cards/:id", cardController.deleteCard);
 
 export default router;
