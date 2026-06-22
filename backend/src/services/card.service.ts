@@ -11,6 +11,7 @@ export interface CreateCardInput {
 
 export interface ICardService {
   createCard(input: CreateCardInput): Promise<Card>;
+  getAllCards(boardId: string): Promise<Card[]>;
 }
 
 export class CardService implements ICardService {
@@ -28,12 +29,21 @@ export class CardService implements ICardService {
     if (!boardDoc) throw new Error("Board not found");
 
     const dataCard = {
-      boardId,
-      name,
+      boardId: boardId,
+      name: name,
       description: description || "",
-      ownerId,
+      ownerId: ownerId,
     };
 
     return await this.cardRepository.create(dataCard);
+  }
+
+  async getAllCards(boardId: string): Promise<Card[]> {
+    if (!boardId) throw new Error("Board Id cannot be null");
+
+    const boardDoc = await this.boardRepository.findById(boardId);
+    if (!boardDoc) throw new Error("Board not found");
+
+    return await this.cardRepository.findCardsByBoardId(boardId);
   }
 }

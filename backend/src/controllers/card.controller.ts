@@ -26,4 +26,24 @@ export class Cardcontroller {
       res.status(400).json({ error: error.message });
     }
   };
+
+  getAllCards = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { boardId } = req.params;
+      
+      getAuthenticatedUser(req); 
+
+      const cards = await this.cardService.getAllCards(boardId);
+
+      const filteredCards = cards.map((card) => ({
+        id: card.id,
+        name: card.name,
+        description: card.description,
+      }));
+
+      res.status(200).json(filteredCards);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
 }

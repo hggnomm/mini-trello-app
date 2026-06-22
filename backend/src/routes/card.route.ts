@@ -8,5 +8,6 @@ const cardController = new Cardcontroller();
 router.use(requireAuth);
 
 router.post("/:boardId/cards", cardController.createCard);
+router.get("/:boardId/cards", cardController.getAllCards);
 
 export default router;
