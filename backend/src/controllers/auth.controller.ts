@@ -18,4 +18,18 @@ export class AuthController {
       res.status(400).json({ error: error.message });
     }
   };
+
+  signIn = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { email, verifyCode } = req.body;
+
+      const accessToken = await this.authService.signIn(email, verifyCode);
+
+      res.status(200).json({
+        accessToken: accessToken,
+      });
+    } catch (error: any) {
+      res.status(401).json({ error: error.message });
+    }
+  };
 }
