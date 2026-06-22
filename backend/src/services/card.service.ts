@@ -99,8 +99,8 @@ export class CardService implements ICardService {
       id: card.id,
       name: card.name,
       description: card.description,
-      tasks_count: 0,
-      list_member: this.getListMembers(card),
+      tasks_count: 0, // update then
+      list_member: [], // update then
       createdAt: card.createdAt ? String(card.createdAt) : "",
     }));
   }
@@ -133,9 +133,5 @@ export class CardService implements ICardService {
     if (!card || card.boardId !== boardId) throw new Error("Card not found");
 
     await this.cardRepository.delete(cardId);
-  }
-
-  private getListMembers(card: Card): string[] {
-    return card.listMembers ?? [card.ownerId];
   }
 }
