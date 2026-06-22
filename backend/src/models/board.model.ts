@@ -7,7 +7,7 @@ export interface Board {
   ownerId: string;
   githubRepositoryId?: string;
   listMembers?: {
-    [userId: string]: "owner" | "accepted" | "pending";
+    [userId: string]: "accepted" | "pending" | "declined";
   };
   createdAt?: Timestamp;
   updatedAt?: Timestamp;

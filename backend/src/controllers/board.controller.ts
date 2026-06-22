@@ -84,4 +84,31 @@ export class BoardController {
       res.status(500).json({ error: error.message });
     }
   };
+
+  inviteUserToBoard = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { boardId } = req.params;
+      const { board_owner_id, member_id, email_member } = req.body;
+
+      const authenticatedUser = getAuthenticatedUser(req);
+
+      if (authenticatedUser.id !== board_owner_id) {
+        res.status(403).json({
+          error: "Unauthorized: You don't have permission invite other members",
+        });
+        return;
+      }
+
+      await this.boardService.inviteUserToBoard({
+        boardId,
+        board_owner_id,
+        member_id,
+        email_member,
+      });
+
+      res.status(200).json({ success: true });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
 }

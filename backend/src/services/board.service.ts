@@ -1,6 +1,17 @@
 import { BoardRepository } from "../repositories/board.repository";
 import { Board } from "../models/board.model";
 import { getDb } from "../libs/firebase/firebase";
+import { sendMail } from "../libs/nodemailer/nodemailer";
+import { UserRepository } from "../repositories/user.repository";
+import { isEmail } from "../utils/email";
+import { logger } from "../utils/logger";
+
+export interface InviteMemberIntoBoardInput {
+  boardId: string;
+  board_owner_id: string;
+  member_id: string;
+  email_member?: string;
+}
 
 export interface IBoardService {
   createBoard(
@@ -13,10 +24,13 @@ export interface IBoardService {
   getBoardById(id: string): Promise<Board | null>;
   updateBoardById(id: string, data: Partial<Board>): Promise<Board>;
   deleteBoard(id: string): Promise<Board | null>;
+  inviteUserToBoard(input: InviteMemberIntoBoardInput): Promise<void>;
+  acceptBoardInvitation(boardId: string, memberId: string): Promise<void>;
 }
 
 export class BoardService implements IBoardService {
   private boardRepository = new BoardRepository();
+  private userRepository = new UserRepository();
 
   async createBoard(
     name: string,
@@ -69,5 +83,71 @@ export class BoardService implements IBoardService {
 
   async deleteBoard(id: string): Promise<Board | null> {
     return await this.boardRepository.delete(id);
+  }
+
+  async inviteUserToBoard(input: InviteMemberIntoBoardInput): Promise<void> {
+    const { boardId, board_owner_id, member_id, email_member } = input;
+
+    const boardOwnerId = board_owner_id;
+    const memberId = member_id;
+    const emailMember = email_member;
+
+    if (!boardId) throw new Error("Board Id cannot be null");
+    if (!boardOwnerId) throw new Error("Board Owner Id cannot be null");
+    if (!memberId) throw new Error("Member Id cannot be null");
+
+    const board = await this.boardRepository.findById(boardId);
+    if (!board) throw new Error("Board not found");
+
+    if (emailMember && !isEmail(emailMember)) {
+      throw new Error("Email format not true");
+    }
+
+    // invite member
+    let email = emailMember;
+
+    // check user
+    const user = await this.userRepository.findById(memberId);
+
+    if (!user) throw new Error("User not found");
+    if (!user.email) throw new Error("Email not found at user");
+    if (!user.isVerified) throw new Error("User is not exits in the system");
+
+    if (emailMember && user.email !== emailMember) {
+      throw new Error(
+        "Provided email does not match member's registered email",
+      );
+    }
+    
+    email = user.email;
+
+    // set member in board list members, set pending status when invited us first
+    const listMembers = board.listMembers || {};
+    listMembers[memberId] = "pending";
+
+    await this.boardRepository.update(boardId, { listMembers });
+
+    // current, set redirect callback link on backend, future to change on frontend
+    const acceptLink = `http://localhost:8000/boards/${boardId}/invite/accept?memberId=${memberId}`;
+
+    const subject = `Invitation to join board: ${board.name}`;
+    const htmlMessage = `
+      <h3>Board Invitation</h3>
+      <p>You have been invited to join <strong>${board.name}</strong>.</p>
+      <p>
+        <a href="${acceptLink}">Accept Invitation</a>
+      </p>
+      <p>If you were not expecting this invitation, please ignore this email.</p>
+    `;
+
+    await sendMail(email, subject, htmlMessage);
+    logger.info(`Invited member ${email}`);
+  }
+
+  async acceptBoardInvitation(
+    boardId: string,
+    memberId: string,
+  ): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 }
