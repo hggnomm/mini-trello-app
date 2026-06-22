@@ -46,4 +46,22 @@ export class Cardcontroller {
       res.status(400).json({ error: error.message });
     }
   };
+
+  getCardById = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { boardId, id } = req.params;
+
+      getAuthenticatedUser(req);
+
+      const card = await this.cardService.getCardById(boardId, id);
+
+      res.status(200).json({
+        id: card.id,
+        name: card.name,
+        description: card.description,
+      });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
 }
