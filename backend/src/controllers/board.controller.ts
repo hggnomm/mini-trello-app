@@ -111,4 +111,27 @@ export class BoardController {
       res.status(400).json({ error: error.message });
     }
   };
+
+  acceptBoardInvitation = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const { boardId } = req.params;
+      const memberId = req.query.memberId as string;
+
+      if (!memberId) {
+        res.status(400).json({ error: "Invalid memberId" });
+        return;
+      }
+
+      await this.boardService.acceptBoardInvitation(boardId, memberId);
+
+      res
+        .status(200)
+        .json({ success: true, message: "Invitation accepted successfully" });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
 }

@@ -5,6 +5,9 @@ import { requireAuth } from "../middleware/auth.middleware";
 const router = Router();
 const boardController = new BoardController();
 
+
+router.get("/:boardId/invite/accept", boardController.acceptBoardInvitation);
+
 router.use(requireAuth);
 
 router.get("/", boardController.getAllBoards);

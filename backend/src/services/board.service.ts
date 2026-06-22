@@ -118,7 +118,7 @@ export class BoardService implements IBoardService {
         "Provided email does not match member's registered email",
       );
     }
-    
+
     email = user.email;
 
     // set member in board list members, set pending status when invited us first
@@ -130,17 +130,13 @@ export class BoardService implements IBoardService {
     // current, set redirect callback link on backend, future to change on frontend
     const acceptLink = `http://localhost:8000/boards/${boardId}/invite/accept?memberId=${memberId}`;
 
-    const subject = `Invitation to join board: ${board.name}`;
-    const htmlMessage = `
-      <h3>Board Invitation</h3>
-      <p>You have been invited to join <strong>${board.name}</strong>.</p>
-      <p>
-        <a href="${acceptLink}">Accept Invitation</a>
-      </p>
-      <p>If you were not expecting this invitation, please ignore this email.</p>
-    `;
+    const { subject, htmlMessage } = this.buildBoardInvitationEmail(
+      board.name,
+      acceptLink,
+    );
 
     await sendMail(email, subject, htmlMessage);
+
     logger.info(`Invited member ${email}`);
   }
 
@@ -148,6 +144,42 @@ export class BoardService implements IBoardService {
     boardId: string,
     memberId: string,
   ): Promise<void> {
-    throw new Error("Method not implemented.");
+    if (!boardId) throw new Error("Board Id cannot be null");
+    if (!memberId) throw new Error("Member Id cannot be null");
+
+    const board = await this.boardRepository.findById(boardId);
+    if (!board) throw new Error("Board not found");
+
+    const listMembers = board.listMembers || {};
+
+    if (listMembers[memberId] !== "pending") {
+      throw new Error(
+        "User not pending status",
+      );
+    }
+
+    listMembers[memberId] = "accepted";
+
+    await this.boardRepository.update(boardId, { listMembers });
+  }
+
+  private buildBoardInvitationEmail(
+    boardName: string,
+    acceptLink: string,
+  ): {
+    subject: string;
+    htmlMessage: string;
+  } {
+    return {
+      subject: `Invitation to join board: ${boardName}`,
+      htmlMessage: `
+        <h3>Board Invitation</h3>
+        <p>You have been invited to join <strong>${boardName}</strong>.</p>
+        <p>
+          <a href="${acceptLink}">Accept Invitation</a>
+        </p>
+        <p>If you were not expecting this invitation, please ignore this email.</p>
+      `,
+    };
   }
 }
