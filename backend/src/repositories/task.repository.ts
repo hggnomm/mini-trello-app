@@ -1,4 +1,5 @@
 import { BaseRepository } from ".";
+import { Task } from "../models/task.model";
 
 export class TaskRepository extends BaseRepository {
   constructor() {
@@ -10,5 +11,21 @@ export class TaskRepository extends BaseRepository {
       .where("cardId", "==", cardId)
       .get();
     return snapshot.size;
+  }
+
+  async findTasksByCardId(cardId: string): Promise<Task[]> {
+    const snapshot = await this.getCollection()
+      .where("cardId", "==", cardId)
+      .get();
+
+    const tasks: Task[] = [];
+    
+    snapshot.forEach((doc: any) => {
+      const data = doc.data();
+      if (data) {
+        tasks.push(data as Task);
+      }
+    });
+    return tasks;
   }
 }

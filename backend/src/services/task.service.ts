@@ -5,6 +5,7 @@ import { TaskRepository } from "../repositories/task.repository";
 
 export interface ITaskService {
   createTaskWithInCard(input: CreateTaskInput): Promise<Task>;
+  getAllTasks(boardId: string, cardId: string): Promise<Task[]>;
 }
 
 export interface CreateTaskInput {
@@ -55,5 +56,18 @@ export class TaskService implements ITaskService {
       order: taskOrder,
     };
     return await this.taskRepository.create(dataTask);
+  }
+
+  async getAllTasks(boardId: string, cardId: string): Promise<Task[]> {
+    if (!boardId) throw new Error("Board Id cannot be null");
+    if (!cardId) throw new Error("Card Id cannot be null");
+
+    const card = await this.cardRepository.findById(cardId);
+    if (!card || card.boardId !== boardId) {
+      throw new Error("Card not found");
+    }
+
+    const tasks = await this.taskRepository.findTasksByCardId(cardId);
+    return tasks.sort((a, b) => a.order - b.order);
   }
 }

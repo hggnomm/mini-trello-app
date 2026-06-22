@@ -41,4 +41,26 @@ export class TaskController {
       res.status(400).json({ error: error.message });
     }
   };
+
+  getAllTasks = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { boardId, id: cardId } = req.params;
+
+      getAuthenticatedUser(req);
+
+      const tasks = await this.taskService.getAllTasks(boardId, cardId);
+
+      const responseData = tasks.map((task) => ({
+        id: task.id,
+        cardId: task.cardId,
+        title: task.title,
+        description: task.description,
+        status: task.status,
+      }));
+      
+      res.status(200).json(responseData);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
 }
