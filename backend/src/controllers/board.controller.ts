@@ -24,7 +24,8 @@ export class BoardController {
 
   getAllBoards = async (req: Request, res: Response): Promise<void> => {
     try {
-      const boards = await this.boardService.getAllBoardsCustom();
+      const user = getAuthenticatedUser(req);
+      const boards = await this.boardService.getAllBoardsCustom(user.id);
       res.status(200).json(boards);
     } catch (error: any) {
       res.status(500).json({ error: error.message });

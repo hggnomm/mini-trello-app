@@ -1,6 +1,5 @@
 import { BoardRepository } from "../repositories/board.repository";
 import { Board } from "../models/board.model";
-import { getDb } from "../libs/firebase/firebase";
 import { sendMail } from "../libs/nodemailer/nodemailer";
 import { UserRepository } from "../repositories/user.repository";
 import { isEmail } from "../utils/email";
@@ -20,7 +19,7 @@ export interface IBoardService {
     description?: string,
   ): Promise<Board>;
   getAllBoards(): Promise<Board[]>;
-  getAllBoardsCustom(): Promise<Board[]>;
+  getAllBoardsCustom(userId: string): Promise<Board[]>;
   getBoardById(id: string): Promise<Board | null>;
   updateBoardById(id: string, data: Partial<Board>): Promise<Board>;
   deleteBoard(id: string): Promise<Board | null>;
@@ -58,17 +57,8 @@ export class BoardService implements IBoardService {
     return await this.boardRepository.findAll();
   }
 
-  async getAllBoardsCustom(): Promise<Board[]> {
-    // just return 3 fields like SKIPLI documents provived
-    const snapshot = await getDb().collection("boards").get();
-
-    const boards: Board[] = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      name: doc.get("name"),
-      ownerId: doc.get("ownerId"),
-    }));
-
-    return boards;
+  async getAllBoardsCustom(userId: string): Promise<Board[]> {
+    return await this.boardRepository.getAllBoardsCustom(userId);
   }
 
   async getBoardById(id: string): Promise<Board | null> {
