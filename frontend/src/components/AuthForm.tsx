@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "react-toastify";
 import { Controller, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { sendOtp, signIn, signUp } from "../api/auth";
@@ -19,7 +20,7 @@ export default function AuthForm({ mode, onStepChange }: AuthFormProps) {
     setIsVerifyCodeState(val);
     onStepChange?.(val);
   };
-  
+
   const { control, getValues, handleSubmit, resetField, setValue } = useForm<{ email: string; otp: string }>({
     defaultValues: {
       email: "",
@@ -31,11 +32,15 @@ export default function AuthForm({ mode, onStepChange }: AuthFormProps) {
     setLoading(true);
 
     const result = await sendOtp({ email });
-    
+
     setLoading(false);
 
-    if (!(result instanceof Error)) {
+    if (result) {
       setIsVerifyCode(true);
+      toast.success("Verification code sent to your email!");
+    } else {
+      const errMsg = "Failed to send verification code. Please try again.";
+      toast.error(errMsg);
     }
   };
 
