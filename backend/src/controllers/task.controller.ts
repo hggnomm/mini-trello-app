@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { getAuthenticatedUser } from "../utils/auth";
 import {
+  AssignMemberToTaskInput,
   ITaskService,
   TaskService,
   UpdateTaskInput,
@@ -127,6 +128,31 @@ export class TaskController {
       await this.taskService.deleteTask(input);
 
       res.status(204).send();
+    } catch (error: any) {
+      res.status(400).json({
+        error: error.message,
+      });
+    }
+  };
+
+  assignMemberToTask = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { boardId, cardId, taskId } = req.params;
+      const { memberId } = req.body;
+
+      const input: AssignMemberToTaskInput = {
+        boardId,
+        cardId,
+        taskId,
+        memberId,
+      };
+
+      const task = await this.taskService.assignMemberToTask(input);
+
+      res.status(201).json({
+        taskId: task.id,
+        memberId,
+      });
     } catch (error: any) {
       res.status(400).json({
         error: error.message,
