@@ -20,5 +20,9 @@ router.get(
   "/:boardId/cards/:cardId/tasks/:taskId/assign",
   taskController.getAllMembersOfTask,
 );
+router.delete(
+  "/:boardId/cards/:cardId/tasks/:taskId/assign/:memberId",
+  taskController.removeMemberFromTask,
+);
 
 export default router;

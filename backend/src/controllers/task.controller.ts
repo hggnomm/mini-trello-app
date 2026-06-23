@@ -176,4 +176,26 @@ export class TaskController {
       });
     }
   };
+
+  removeMemberFromTask = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const { memberId } = req.params;
+
+      const input = this.getTaskParams(req);
+
+      await this.taskService.removeMemberFromTask({
+        ...input,
+        memberId,
+      });
+
+      res.status(204).send();
+    } catch (error: any) {
+      res.status(400).json({
+        error: error.message,
+      });
+    }
+  };
 }

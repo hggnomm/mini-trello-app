@@ -10,12 +10,13 @@ export interface ITaskService {
   updateTask(input: UpdateTaskInput): Promise<Task>;
   deleteTask(input: TaskParamsInput): Promise<void>;
   assignMemberToTask(input: AssignMemberToTaskInput): Promise<Task>;
+  removeMemberFromTask(input: AssignMemberToTaskInput): Promise<void>;
   getAllMembersOfTask(input: TaskParamsInput): Promise<string[]>;
 }
 
 export interface CreateTaskInput {
-  cardId: string;
   boardId: string;
+  cardId: string;
   ownerId: string;
   title: string;
   description?: string;
@@ -41,6 +42,14 @@ export class TaskService implements ITaskService {
   private taskRepository = new TaskRepository();
   private cardRepository = new CardRepository();
   private boardRepository = new BoardRepository();
+
+  private checkTaskParams(input: TaskParamsInput): void {
+    const { boardId, cardId, taskId } = input;
+
+    if (!boardId) throw new Error("Board Id cannot be null");
+    if (!cardId) throw new Error("Card Id cannot be null");
+    if (!taskId) throw new Error("Task Id cannot be null");
+  }
 
   async createTaskWithInCard(input: CreateTaskInput): Promise<Task> {
     const { boardId, cardId, ownerId, title, description, status } = input;
@@ -118,9 +127,7 @@ export class TaskService implements ITaskService {
     const { boardId, cardId, taskId, ...data } = input;
 
     console.log(cardId)
-    if (!boardId) throw new Error("Board Id cannot be null");
-    if (!cardId) throw new Error("Card Id cannot be null");
-    if (!taskId) throw new Error("Task Id cannot be null");
+    this.checkTaskParams(input);
 
     const boardDoc = await this.boardRepository.findById(boardId);
     if (!boardDoc) throw new Error("Board not found");
@@ -141,9 +148,7 @@ export class TaskService implements ITaskService {
   async deleteTask(input: TaskParamsInput): Promise<void> {
     const { boardId, cardId, taskId } = input;
 
-    if (!boardId) throw new Error("Board Id cannot be null");
-    if (!cardId) throw new Error("Card Id cannot be null");
-    if (!taskId) throw new Error("Task Id cannot be null");
+    this.checkTaskParams(input);
 
     const card = await this.cardRepository.findById(cardId);
     if (!card || card.boardId !== boardId) {
@@ -162,9 +167,7 @@ export class TaskService implements ITaskService {
   async assignMemberToTask(input: AssignMemberToTaskInput): Promise<Task> {
     const { boardId, cardId, taskId, memberId } = input;
 
-    if (!boardId) throw new Error("Board Id cannot be null");
-    if (!cardId) throw new Error("Card Id cannot be null");
-    if (!taskId) throw new Error("Task Id cannot be null");
+    this.checkTaskParams(input);
     if (!memberId) throw new Error("Member Id cannot be null");
 
     const board = await this.boardRepository.findById(boardId);
@@ -198,14 +201,46 @@ export class TaskService implements ITaskService {
     });
   }
 
+  async removeMemberFromTask(input: AssignMemberToTaskInput): Promise<void> {
+    const { boardId, cardId, taskId, memberId } = input;
+
+    this.checkTaskParams(input);
+    
+    if (!memberId) throw new Error("Member Id cannot be null");
+
+    const card = await this.cardRepository.findById(cardId);
+    if (!card || card.boardId !== boardId) {
+      throw new Error("Card not found");
+    }
+
+    const task = await this.taskRepository.findById(taskId);
+    if (!task || task.cardId !== cardId) {
+      throw new Error("Task not found");
+    }
+
+    const memberIdNeedRemove = memberId
+
+    const assignedMembers = task.assignedMembers || [];
+    if (!assignedMembers.includes(memberIdNeedRemove)) {
+      throw new Error("Member is not assigned to this task");
+    }
+
+    // remove member
+    const updatedMemberList = assignedMembers.filter(
+      (member: any) => member !== memberIdNeedRemove,
+    );
+
+    await this.taskRepository.update(taskId, {
+      assignedMembers: updatedMemberList,
+    });
+  }
+
   async getAllMembersOfTask(
     input: TaskParamsInput,
   ): Promise<string[]> {
     const { boardId, cardId, taskId } = input;
 
-    if (!boardId) throw new Error("Board Id cannot be null");
-    if (!cardId) throw new Error("Card Id cannot be null");
-    if (!taskId) throw new Error("Task Id cannot be null");
+    this.checkTaskParams(input);
 
     const board = await this.boardRepository.findById(boardId);
     if (!board) throw new Error("Board not found");
