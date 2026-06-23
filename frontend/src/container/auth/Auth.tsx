@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import logo from "../../assets/skipli_logo.png";
 import bgLeft from "../../assets/background_left.png";
@@ -12,15 +13,18 @@ type AuthProps = {
 export default function Auth({ mode }: AuthProps) {
   const location = useLocation();
   const activeMode = mode || (location.pathname === ROUTES.REGISTER ? "register" : "login");
+  const [isVerifyCode, setIsVerifyCode] = useState(false);
 
   return (
     <div id="login_page" className="relative flex min-h-screen flex-col items-center justify-center bg-white font-sans antialiased">
       <div className="z-10 w-full max-w-[350px] rounded border border-gray-200 py-8 px-8 flex flex-col gap-3">
-        <div className="flex flex-col items-center justify-center">
-          <img src={logo} alt="Skipli Logo" className="h-[56px] w-auto" />
-        </div>
+        {!isVerifyCode && (
+          <div className="flex flex-col items-center justify-center">
+            <img src={logo} alt="Skipli Logo" className="h-[56px] w-auto" />
+          </div>
+        )}
 
-        <AuthForm mode={activeMode} />
+        <AuthForm mode={activeMode} onStepChange={setIsVerifyCode} />
 
         <div className="text-center text-[11px] text-[#536488]">
           <p className="text-[#3F4C67] hover:underline cursor-pointer">Privacy Policy</p>
