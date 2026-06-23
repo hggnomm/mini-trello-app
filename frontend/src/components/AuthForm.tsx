@@ -43,8 +43,8 @@ export default function AuthForm({ mode, onStepChange }: AuthFormProps) {
         const errMsg = "Failed to send verification code. Please try again.";
         toast.error(errMsg);
       }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to verify user.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to verify user.");
     } finally {
       setLoading(false);
     }
