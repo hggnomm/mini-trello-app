@@ -10,5 +10,6 @@ router.use(requireAuth);
 router.post("/:boardId/cards/:cardId/tasks", taskController.createCard);
 router.get("/:boardId/cards/:cardId/tasks", taskController.getAllTasks);
 router.get("/:boardId/cards/:cardId/tasks/:taskId", taskController.getTaskById);
+router.put("/:boardId/cards/:cardId/tasks/:taskId", taskController.updateTask);
 
 export default router;

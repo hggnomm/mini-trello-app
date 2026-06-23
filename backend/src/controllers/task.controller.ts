@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import { getAuthenticatedUser } from "../utils/auth";
-import { ITaskService, TaskService } from "../services/task.service";
+import {
+  ITaskService,
+  TaskService,
+  UpdateTaskInput,
+} from "../services/task.service";
 import { Task } from "../models/task.model";
 
 export type CreateTaskResponse = Pick<
@@ -83,6 +87,30 @@ export class TaskController {
       res.status(200).json(responseData);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
+    }
+  };
+
+  updateTask = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { boardId, cardId, taskId } = req.params;
+
+      const input: UpdateTaskInput = {
+        boardId,
+        cardId,
+        taskId,
+        ...req.body,
+      };
+
+      const updatedTask = await this.taskService.updateTask(input);
+
+      res.status(200).json({
+        id: updatedTask.id,
+        cardId: updatedTask.cardId,
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        error: error.message,
+      });
     }
   };
 }
