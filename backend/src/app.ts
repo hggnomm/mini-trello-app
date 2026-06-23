@@ -8,12 +8,15 @@ import boardRoutes from "./routes/board.route";
 import authRoutes from "./routes/auth.route";
 import cardRoutes from "./routes/card.route";
 import taskRoutes from "./routes/task.route";
+import { setupApiDocs } from "./docs/api-docs";
 
 export function createApp(): Express {
   const app = express();
 
   app.use(cors());
   app.use(express.json());
+
+  setupApiDocs(app);
 
   app.use("/auth", authRoutes);
   app.use("/boards", boardRoutes);
