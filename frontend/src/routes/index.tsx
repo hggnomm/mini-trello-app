@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import Login from "../container/auth/Login.tsx";
+import Auth from "../container/auth/Auth.tsx";
 import Dashboard from "../container/Dashboard.tsx";
 import ProtectedRoute from "../components/ProtectedRoute.tsx";
 import { ROUTES } from "../constants/route.constant.ts";
@@ -7,7 +7,11 @@ import { ROUTES } from "../constants/route.constant.ts";
 export const router = createBrowserRouter([
   {
     path: ROUTES.LOGIN,
-    element: <Login />,
+    element: <Auth />,
+  },
+  {
+    path: ROUTES.REGISTER,
+    element: <Auth />,
   },
   {
     path: ROUTES.DASHBOARD,
