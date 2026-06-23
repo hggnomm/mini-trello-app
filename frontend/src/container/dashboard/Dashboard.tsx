@@ -68,7 +68,7 @@ export default function Dashboard() {
       )}
       {isCreateOpen && (
         <Suspense fallback={null}>
-          <CreateBoardModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
+          <CreateBoardModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onCreated={fetchBoards} />
         </Suspense>
       )}{" "}
     </div>

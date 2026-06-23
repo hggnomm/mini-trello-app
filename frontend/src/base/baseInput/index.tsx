@@ -1,6 +1,8 @@
 import type { ChangeEvent, FocusEvent, ReactNode } from "react";
 import { cn } from "../../utils/cn";
 
+type BaseInputVariant = "primary" | "secondary";
+
 type BaseInputProps = {
   id?: string;
   value?: string;
@@ -15,6 +17,7 @@ type BaseInputProps = {
   type?: string;
   onClear?: () => void;
   align?: "left" | "center" | "right";
+  variant?: BaseInputVariant;
 };
 
 const BaseInput = ({
@@ -31,12 +34,15 @@ const BaseInput = ({
   type = "text",
   onClear,
   align = "left",
+  variant = "primary",
 }: BaseInputProps) => {
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-3 bg-white w-full rounded-sm border border-[#565D6D] px-3 py-2 h-auto shadow-none focus-within:border-blue-500 transition",
+        "inline-flex items-center gap-3 w-full px-3 py-2 h-auto shadow-none transition",
         {
+          "bg-white rounded-sm border border-[#565D6D] focus-within:border-blue-500": variant === "primary",
+          "bg-black/20 rounded-[8px] border border-gray-700 focus-within:border-blue-500": variant === "secondary",
           "opacity-50 cursor-not-allowed": disabled,
         },
         className,
@@ -57,8 +63,10 @@ const BaseInput = ({
         onFocus={onFocus}
         disabled={disabled}
         className={cn(
-          "flex-1 bg-transparent border-none outline-none text-sm text-black w-full",
+          "flex-1 bg-transparent border-none outline-none text-sm w-full",
           {
+            "text-black": variant === "primary",
+            "text-white placeholder:text-gray-500": variant === "secondary",
             "text-left": align === "left",
             "text-left placeholder-shown:text-center": align === "center",
             "text-right placeholder-shown:text-center": align === "right",
