@@ -105,9 +105,12 @@ export class TaskService implements ITaskService {
     cardId: string,
     taskId: string,
   ): Promise<Task> {
-    if (!boardId) throw new Error("Board Id cannot be null");
-    if (!cardId) throw new Error("Card Id cannot be null");
-    if (!taskId) throw new Error("Task Id cannot be null");
+    
+    this.checkTaskParams({
+      boardId,
+      cardId,
+      taskId,
+    });
 
     const card = await this.cardRepository.findById(cardId);
     if (!card || card.boardId !== boardId) {
