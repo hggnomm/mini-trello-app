@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { Controller, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { sendOtp, signIn, signUp } from "../api/auth";
+import { sendOtp, signIn, signUp, verifyUser } from "../api/auth";
 import BaseButton from "../base/baseButton";
 import BaseInput from "../base/baseInput";
 import { ROUTES } from "../constants/route.constant";
@@ -32,15 +32,21 @@ export default function AuthForm({ mode, onStepChange }: AuthFormProps) {
   const onSendOtp = async ({ email }: { email: string; otp: string }) => {
     setLoading(true);
 
-    const result = await sendOtp({ email });
+    try {
+      await verifyUser({ email, mode });
 
-    setLoading(false);
+      const result = await sendOtp({ email });
 
-    if (result) {
-      setIsVerifyCode(true);
-    } else {
-      const errMsg = "Failed to send verification code. Please try again.";
-      toast.error(errMsg);
+      if (result) {
+        setIsVerifyCode(true);
+      } else {
+        const errMsg = "Failed to send verification code. Please try again.";
+        toast.error(errMsg);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to verify user.");
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -7,6 +7,7 @@ const authController = new AuthController();
 router.post("/signup", authController.signUp);
 router.post("/signin", authController.signIn);
 router.post("/send-otp", authController.sendOTP);
+router.post("/verify-user", authController.verifyUser);
 
 
 router.get("/github", authController.githubSignIn);

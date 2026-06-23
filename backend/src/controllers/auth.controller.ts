@@ -83,4 +83,22 @@ export class AuthController {
       res.status(400).json({ error: error.message });
     }
   };
+
+  verifyUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { email, mode } = req.body;
+
+      if (!isEmail(email)) {
+        throw new Error("Email format not true");
+      }
+
+      await this.authService.verifyUser(email, mode);
+
+      res.status(200).json({
+        message: "User verified successfully",
+      });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
 }

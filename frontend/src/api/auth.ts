@@ -14,3 +14,8 @@ export const signIn = async (data: { email: string; verifyCode: number }) => {
   const response = await axiosInstance.post("/auth/signin", data);
   return response.data;
 };
+
+export const verifyUser = async (data: { email: string; mode: "login" | "register" }) => {
+  const response = await axiosInstance.post("/auth/verify-user", data);
+  return response.data;
+};

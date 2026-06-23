@@ -31,7 +31,13 @@ axiosInstance.interceptors.response.use(
     if (axios.isAxiosError(error)) {
       if (error.response?.status === 401) {
         localStorage.removeItem("accessToken");
-        window.location.href = ROUTES.LOGIN;
+        const isAuthPage =
+          window.location.pathname.includes(ROUTES.LOGIN) || window.location.pathname.includes(ROUTES.REGISTER);
+          
+        if (!isAuthPage) {
+          window.location.href = ROUTES.LOGIN;
+        }
+        return Promise.reject(error);
       }
 
       const message =

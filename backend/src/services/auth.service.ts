@@ -15,12 +15,29 @@ export interface IAuthService {
   signUp(email: string, verifyCode: number): Promise<User>;
   signIn(email: string, verifyCode: number): Promise<string>;
   sendOTP(email: string): Promise<void>;
+  verifyUser(email: string, mode: "login" | "register"): Promise<void>;
   getGithubSignInUrl(): string;
   signInWithGithub(code: string): Promise<User>;
 }
 
 export class AuthService implements IAuthService {
   private userRepository = new UserRepository();
+
+  async verifyUser(email: string, mode: "login" | "register"): Promise<void> {
+    if (!email) throw new Error("Email cannot be null");
+
+    const user = await this.userRepository.findUserByEmail(email);
+
+    if (mode === "register") {
+      if (user && user.isVerified) {
+        throw new Error("User already exists in the system");
+      }
+    } else if (mode === "login") {
+      if (!user || !user.isVerified) {
+        throw new Error("User not registered in the system");
+      }
+    }
+  }
 
   async signUp(email: string, verifyCode: number): Promise<User> {
     if (!email) throw new Error("Email cannot be null");
