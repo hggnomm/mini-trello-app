@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { Controller, useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { sendOtp, signIn, signUp } from "../api/auth";
 import BaseButton from "../base/baseButton";
 import BaseInput from "../base/baseInput";
@@ -13,6 +13,7 @@ type AuthFormProps = {
 };
 
 export default function AuthForm({ mode, onStepChange }: AuthFormProps) {
+  const navigate = useNavigate();
   const [isVerifyCode, setIsVerifyCodeState] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -44,21 +45,48 @@ export default function AuthForm({ mode, onStepChange }: AuthFormProps) {
     }
   };
 
+  const handleAuthenLogic = async (payload: { email: string; verifyCode: number }) => {
+    try {
+      const data = mode === "login" ? await signIn(payload) : await signUp(payload);
+
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Something went wrong",
+      };
+    }
+  };
+
   const onVerify = async ({ email, otp }: { email: string; otp: string }) => {
     setLoading(true);
 
-    const payload = {
-      email,
-      verifyCode: Number(otp),
-    };
+    try {
+      const res = await handleAuthenLogic({
+        email,
+        verifyCode: Number(otp),
+      });
 
-    if (mode === "login") {
-      await signIn(payload);
-    } else {
-      await signUp(payload);
+      if (!res.success) {
+        toast.error(res.message);
+        return;
+      }
+
+      toast.success(mode === "login" ? "Logged in successfully!" : "Signed up successfully!");
+
+      if (mode === "login") {
+        localStorage.setItem("accessToken", res.data.accessToken);
+        navigate(ROUTES.DASHBOARD);
+        return;
+      }
+
+      navigate(ROUTES.LOGIN);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const backToEmailStep = () => {
