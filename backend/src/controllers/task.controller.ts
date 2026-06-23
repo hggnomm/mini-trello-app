@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { getAuthenticatedUser } from "../utils/auth";
 import {
-  AssignMemberToTaskInput,
   ITaskService,
+  TaskParamsInput,
   TaskService,
   UpdateTaskInput,
 } from "../services/task.service";
@@ -15,6 +15,16 @@ export type CreateTaskResponse = Pick<
 
 export class TaskController {
   private taskService: ITaskService = new TaskService();
+
+  private getTaskParams(req: Request): TaskParamsInput {
+    const { boardId, cardId, taskId } = req.params;
+
+    return {
+      boardId,
+      cardId,
+      taskId,
+    };
+  }
 
   createCard = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -93,12 +103,8 @@ export class TaskController {
 
   updateTask = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { boardId, cardId, taskId } = req.params;
-
       const input: UpdateTaskInput = {
-        boardId,
-        cardId,
-        taskId,
+        ...this.getTaskParams(req),
         ...req.body,
       };
 
@@ -117,15 +123,7 @@ export class TaskController {
 
   deleteTask = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { boardId, cardId, taskId } = req.params;
-
-      const input = {
-        boardId,
-        cardId,
-        taskId,
-      };
-
-      await this.taskService.deleteTask(input);
+      await this.taskService.deleteTask(this.getTaskParams(req));
 
       res.status(204).send();
     } catch (error: any) {
@@ -137,13 +135,10 @@ export class TaskController {
 
   assignMemberToTask = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { boardId, cardId, taskId } = req.params;
       const { memberId } = req.body;
 
-      const input: AssignMemberToTaskInput = {
-        boardId,
-        cardId,
-        taskId,
+      const input = {
+        ...this.getTaskParams(req),
         memberId,
       };
 
@@ -153,6 +148,28 @@ export class TaskController {
         taskId: task.id,
         memberId,
       });
+    } catch (error: any) {
+      res.status(400).json({
+        error: error.message,
+      });
+    }
+  };
+
+  getAllMembersOfTask = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const input = this.getTaskParams(req);
+
+      const assignedMembers = await this.taskService.getAllMembersOfTask(input);
+
+      const responseData = assignedMembers.map((memberId) => ({
+        taskId: input.taskId,
+        memberId,
+      }));
+
+      res.status(200).json(responseData);
     } catch (error: any) {
       res.status(400).json({
         error: error.message,

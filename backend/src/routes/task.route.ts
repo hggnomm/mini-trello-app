@@ -16,5 +16,9 @@ router.post(
   "/:boardId/cards/:cardId/tasks/:taskId/assign",
   taskController.assignMemberToTask,
 );
+router.get(
+  "/:boardId/cards/:cardId/tasks/:taskId/assign",
+  taskController.getAllMembersOfTask,
+);
 
 export default router;
