@@ -38,7 +38,6 @@ export default function AuthForm({ mode, onStepChange }: AuthFormProps) {
 
     if (result) {
       setIsVerifyCode(true);
-      toast.success("Verification code sent to your email!");
     } else {
       const errMsg = "Failed to send verification code. Please try again.";
       toast.error(errMsg);
@@ -77,13 +76,11 @@ export default function AuthForm({ mode, onStepChange }: AuthFormProps) {
 
       toast.success(mode === "login" ? "Logged in successfully!" : "Signed up successfully!");
 
-      if (mode === "login") {
+      if (res.data?.accessToken) {
         localStorage.setItem("accessToken", res.data.accessToken);
-        navigate(ROUTES.DASHBOARD);
-        return;
       }
 
-      navigate(ROUTES.LOGIN);
+      navigate(ROUTES.DASHBOARD);
     } finally {
       setLoading(false);
     }

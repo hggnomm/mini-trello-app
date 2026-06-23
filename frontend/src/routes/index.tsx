@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Auth from "../container/auth/Auth.tsx";
-import Dashboard from "../container/Dashboard.tsx";
+import Dashboard from "../container/dashboard/Dashboard.tsx";
+import Layout from "../components/Layout.tsx";
 import ProtectedRoute from "../components/ProtectedRoute.tsx";
 import { ROUTES } from "../constants/route.constant.ts";
 
@@ -14,12 +15,17 @@ export const router = createBrowserRouter([
     element: <Auth />,
   },
   {
-    path: ROUTES.DASHBOARD,
     element: (
       <ProtectedRoute>
-        <Dashboard />
+        <Layout />
       </ProtectedRoute>
     ),
+    children: [
+      {
+        path: ROUTES.DASHBOARD,
+        element: <Dashboard />,
+      },
+    ],
   },
   {
     path: "*",
