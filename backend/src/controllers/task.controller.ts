@@ -113,4 +113,24 @@ export class TaskController {
       });
     }
   };
+
+  deleteTask = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { boardId, cardId, taskId } = req.params;
+
+      const input = {
+        boardId,
+        cardId,
+        taskId,
+      };
+
+      await this.taskService.deleteTask(input);
+
+      res.status(204).send();
+    } catch (error: any) {
+      res.status(400).json({
+        error: error.message,
+      });
+    }
+  };
 }

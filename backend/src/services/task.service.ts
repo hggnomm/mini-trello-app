@@ -8,6 +8,7 @@ export interface ITaskService {
   getAllTasks(boardId: string, cardId: string): Promise<Task[]>;
   getTaskById(boardId: string, cardId: string, taskId: string): Promise<Task>;
   updateTask(input: UpdateTaskInput): Promise<Task>;
+  deleteTask(input: DeleteTaskInput): Promise<void>;
 }
 
 export interface CreateTaskInput {
@@ -26,6 +27,12 @@ export interface UpdateTaskInput {
 
   title?: string;
   description?: string;
+}
+
+export interface DeleteTaskInput {
+  boardId: string;
+  cardId: string;
+  taskId: string;
 }
 
 export class TaskService implements ITaskService {
@@ -127,5 +134,26 @@ export class TaskService implements ITaskService {
     }
 
     return await this.taskRepository.update(taskId, data);
+  }
+
+  async deleteTask(input: DeleteTaskInput): Promise<void> {
+    const { boardId, cardId, taskId } = input;
+
+    if (!boardId) throw new Error("Board Id cannot be null");
+    if (!cardId) throw new Error("Card Id cannot be null");
+    if (!taskId) throw new Error("Task Id cannot be null");
+
+    const card = await this.cardRepository.findById(cardId);
+    if (!card || card.boardId !== boardId) {
+      throw new Error("Card not found");
+    }
+
+    const task = await this.taskRepository.findById(taskId);
+
+    if (!task || task.cardId !== cardId) {
+      throw new Error("Task not found");
+    }
+
+    await this.taskRepository.delete(taskId);
   }
 }
