@@ -4,12 +4,19 @@ import { UserRepository } from "../repositories/user.repository";
 import { sendMail } from "../libs/nodemailer/nodemailer";
 import { Timestamp } from "@google-cloud/firestore";
 import { logger } from "../utils/logger";
+import {
+  getGithubAccessToken,
+  getGithubUser,
+  getEmails,
+} from "../libs/github/github";
 var jwt = require("jsonwebtoken");
 
 export interface IAuthService {
   signUp(email: string, verifyCode: number): Promise<User>;
   signIn(email: string, verifyCode: number): Promise<string>;
   sendOTP(email: string): Promise<void>;
+  getGithubSignInUrl(): string;
+  signInWithGithub(code: string): Promise<User>;
 }
 
 export class AuthService implements IAuthService {
@@ -117,5 +124,56 @@ export class AuthService implements IAuthService {
     });
 
     return updatedUser;
+  }
+
+  getGithubSignInUrl(): string {
+    const clientId = settings.GITHUB_OAUTH.CLIENT_ID;
+    const redirectUri = settings.GITHUB_OAUTH.CALLBACK_URL;
+
+    const scope = "read:user user:email";
+
+    return `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
+      redirectUri,
+    )}&scope=${encodeURIComponent(scope)}`;
+  }
+
+  async signInWithGithub(code: string): Promise<User> {
+    const token = await getGithubAccessToken(code);
+    const ghUser = await getGithubUser(token);
+
+    let email = ghUser.email;
+    if (!ghUser.email) {
+      const emails = await getEmails(token);
+      email = emails.find((e) => e.primary && e.verified)?.email;
+    }
+
+    if (!email) throw new Error("No verified email found");
+
+    const githubId = ghUser.id.toString();
+    const githubName = ghUser.login;
+
+    // save infor github into user collection
+    let githubAccountUser =
+      await this.userRepository.findUserByGithubId(githubId);
+
+    if (!githubAccountUser) {
+      let user = await this.userRepository.findUserByEmail(email);
+      if (!user) {
+        throw new Error("User not in the system. Please sign up first.");
+      }
+
+      return this.userRepository.update(user.id, {
+        githubId,
+        githubName,
+        githubAccessToken: token,
+        isVerified: true,
+      });
+    }
+
+    // github account exits by user
+    return this.userRepository.update(githubAccountUser.id, {
+      githubName,
+      githubAccessToken: token,
+    });
   }
 }

@@ -16,4 +16,15 @@ export class UserRepository extends BaseRepository {
 
     return snapshot_user_result.docs[0].data() as User;
   }
+
+  async findUserByGithubId(githubId: string): Promise<User | null> {
+    const snapshot_user_result = await this.getCollection()
+      .where("githubId", "==", githubId)
+      .limit(1)
+      .get();
+
+    if (snapshot_user_result.empty) return null;
+
+    return snapshot_user_result.docs[0].data() as User;
+  }
 }

@@ -8,6 +8,13 @@ export const settings = {
   PORT: Number(process.env.PORT) || 8000,
   JWT_SECRET: process.env.JWT_SECRET || "123123123",
   GITHUB_TOKEN: process.env.GITHUB_TOKEN || "",
+  GITHUB_OAUTH: {
+    CLIENT_ID: process.env.GITHUB_CLIENT_ID || "",
+    CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || "",
+    CALLBACK_URL:
+      process.env.GITHUB_CALLBACK_URL ||
+      "http://localhost:8000/auth/github/callback",
+  },
   SMTP: {
     HOST: process.env.SMTP_HOST || "",
     PORT: Number(process.env.SMTP_PORT) || 587,

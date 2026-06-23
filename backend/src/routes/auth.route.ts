@@ -8,4 +8,11 @@ router.post("/signup", authController.signUp);
 router.post("/signin", authController.signIn);
 router.post("/send-otp", authController.sendOTP);
 
+
+router.get("/github", authController.githubSignIn);
+
+// change on frontend after
+router.get("/github/callback", authController.githubCallback);
+
+
 export default router;

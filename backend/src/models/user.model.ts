@@ -8,6 +8,9 @@ export interface User {
   verifyCode?: number;
   codeExpiryTime?: Timestamp; 
   isVerified: boolean;
+  githubId?: string;
+  githubName?: string;
+  githubAccessToken?: string;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }
