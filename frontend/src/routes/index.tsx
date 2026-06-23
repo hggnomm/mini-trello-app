@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import Login from "../container/Login.tsx";
+import Login from "../container/auth/Login.tsx";
 import Dashboard from "../container/Dashboard.tsx";
 import ProtectedRoute from "../components/ProtectedRoute.tsx";
 import { ROUTES } from "../constants/route.constant.ts";
