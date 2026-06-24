@@ -4,8 +4,8 @@ import { toast } from "react-toastify";
 import { HiX } from "react-icons/hi";
 import { inviteUserToBoard, getBoardMembers, type Board, type BoardMember } from "../../api/board";
 import BaseButton from "../../base/baseButton";
-import BaseInput from "../../base/baseInput";
 import BaseModal from "../../base/baseModal";
+import SearchUser from "./SearchUser";
 
 type InviteMemberModalProps = {
   isOpen: boolean;
@@ -20,6 +20,9 @@ type InviteFormValues = {
 export default function InviteMemberModal({ isOpen, onClose, board }: InviteMemberModalProps) {
   const [members, setMembers] = useState<BoardMember[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const { control, handleSubmit, reset, setValue } = useForm<InviteFormValues>({
     defaultValues: { email: "" },
@@ -52,11 +55,12 @@ export default function InviteMemberModal({ isOpen, onClose, board }: InviteMemb
       await inviteUserToBoard(board.id, {
         board_owner_id: board.ownerId,
         email_member: email.trim(),
+        ...(selectedUserId ? { member_id: selectedUserId } : {}),
       });
 
       toast.success("Invitation sent successfully!");
       reset({ email: "" });
-      
+
       refreshMembers();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to invite member");
@@ -73,26 +77,24 @@ export default function InviteMemberModal({ isOpen, onClose, board }: InviteMemb
 
       <h3 className="text-lg font-bold text-white mb-4">Invite Member</h3>
 
-      <form onSubmit={handleSubmit(onInvite)} className="flex gap-2 mb-6">
-        <div className="flex-1">
-          <Controller
-            name="email"
-            control={control}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <BaseInput
-                type="email"
-                placeholder="Email address"
-                variant="secondary"
-                value={field.value}
-                onChange={field.onChange}
-                onClear={() => setValue("email", "")}
-                disabled={loading}
-              />
-            )}
-          />
-        </div>
-        <BaseButton variant="primary" type="submit" loading={loading}>
+      <form onSubmit={handleSubmit(onInvite)} className="flex gap-2 mb-6 relative">
+        <Controller
+          name="email"
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <SearchUser
+              value={field.value}
+              onChange={field.onChange}
+              onClear={() => setValue("email", "")}
+              onMatchUserId={setSelectedUserId}
+              excludeMembers={members}
+              disabled={loading}
+              onSearchingStatusChange={setIsSearching}
+            />
+          )}
+        />
+        <BaseButton className="w-20" variant="primary" type="submit" disabled={isSearching} loading={loading}>
           Invite
         </BaseButton>
       </form>
@@ -109,13 +111,11 @@ export default function InviteMemberModal({ isOpen, onClose, board }: InviteMemb
             return (
               <div key={member.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-bold text-white">
+                  <div className="w-8 h-8 bg-[#e53935] rounded-full flex items-center justify-center text-sm font-bold text-white">
                     {member.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-200">
-                      {member.name} {board.ownerId === member.id && "(owner)"}
-                    </p>
+                    <p className="text-sm font-medium text-gray-200">{member.name}</p>
                     <p className="text-xs text-gray-500">{member.email}</p>
                   </div>
                 </div>

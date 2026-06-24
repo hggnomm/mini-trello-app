@@ -8,6 +8,7 @@ import { ROUTES } from "../constants/route.constant.ts";
 import { lazy } from "react";
 
 const BoardView = lazy(() => import("../container/dashboard/BoardView.tsx"));
+const BoardInviteAccept = lazy(() => import("../container/dashboard/BoardInviteAccept.tsx"));
 
 export const router = createBrowserRouter([
   {
@@ -32,6 +33,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.BOARD_DETAIL,
         element: <BoardView />,
+      },
+      {
+        path: ROUTES.BOARD_INVITE_ACCEPT,
+        element: <BoardInviteAccept />,
       },
       {
         path: ROUTES.GITHUB_CALLBACK,
