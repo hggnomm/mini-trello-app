@@ -92,10 +92,14 @@ export class CardService implements ICardService {
     const boardDoc = await this.boardRepository.findById(boardId);
     if (!boardDoc) throw new Error("Board not found");
 
-    const cards = await this.cardRepository.findCardsByBoardIdAndOwnerId(
-      boardId,
-      userId,
-    );
+    const isOwner = boardDoc.ownerId === userId;
+    const isMember = boardDoc.listMembers?.[userId] === "accepted";
+
+    if (!isOwner && !isMember) {
+      throw new Error("User is not a member of this board");
+    }
+
+    const cards = await this.cardRepository.findCardsByBoardId(boardId);
 
     return Promise.all(
       cards.map(async (card) => ({

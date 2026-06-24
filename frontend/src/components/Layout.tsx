@@ -8,9 +8,9 @@ export default function Layout() {
       <Header />
 
       {/* main contianer */}
-      <div id="container" className="flex flex-1 overflow-hidden ">
+      <div id="container" className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto p-6 bg-[#2F3840]">
+        <main className="flex-1 min-w-0 overflow-hidden bg-[#2F3840]">
           <Outlet />
         </main>
       </div>

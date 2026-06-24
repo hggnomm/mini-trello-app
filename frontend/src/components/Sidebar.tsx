@@ -83,7 +83,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="hidden h-full w-[300px] overflow-y-auto bg-[#2F3840] p-10 pr-0 text-[#dfe1e6] md:flex md:flex-col">
+    <aside className="hidden h-full w-[300px] shrink-0 overflow-y-auto bg-[#2F3840] p-10 pr-0 text-[#dfe1e6] md:flex md:flex-col">
       <div className="flex flex-col gap-4">
         {/* Top Navigation */}
         <nav className="flex flex-col gap-1">

@@ -5,6 +5,9 @@ import Layout from "../components/Layout.tsx";
 import ProtectedRoute from "../components/ProtectedRoute.tsx";
 import GithubCallback from "../container/auth/GithubCallback.tsx";
 import { ROUTES } from "../constants/route.constant.ts";
+import { lazy } from "react";
+
+const BoardView = lazy(() => import("../container/dashboard/BoardView.tsx"));
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +28,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.DASHBOARD,
         element: <Dashboard />,
+      },
+      {
+        path: ROUTES.BOARD_DETAIL,
+        element: <BoardView />,
       },
       {
         path: ROUTES.GITHUB_CALLBACK,
