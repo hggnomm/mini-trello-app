@@ -36,8 +36,10 @@ export default function GithubCallback() {
     window.history.replaceState({}, "", "/");
 
     if (!code) {
-      setStatus("error");
-      setErrorMessage("No authorization code received from GitHub.");
+      setStatus("error" as Status);
+      setTimeout(() => {
+        setErrorMessage("No authorization code received from GitHub.");
+      }, 0);
       return;
     }
 
@@ -46,13 +48,15 @@ export default function GithubCallback() {
         const result = await exchangeGithubCode(code);
 
         setGithubName(result.githubName ?? "");
-        setStatus("success");
+        setStatus("success" as Status);
 
         const profile = await getProfile();
         dispatch(setUser(profile));
       } catch (error) {
-        setStatus("error");
-        setErrorMessage(error instanceof Error ? error.message : "GitHub connection failed.");
+        setStatus("error" as Status);
+        setTimeout(() => {
+          setErrorMessage(error instanceof Error ? error.message : "GitHub connection failed.");
+        }, 0);
       }
     };
 
