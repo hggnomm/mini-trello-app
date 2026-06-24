@@ -27,4 +27,26 @@ export class UserRepository extends BaseRepository {
 
     return snapshot_user_result.docs[0].data() as User;
   }
+
+  async searchVerifiedUsers(query: string): Promise<User[]> {
+    const q = query.toLowerCase().trim();
+
+    const snapshot = await this.getCollection()
+      .where("isVerified", "==", true)
+      .get();
+
+    const users: User[] = [];
+    
+    snapshot.forEach((doc) => {
+      const data = doc.data() as User;
+      if (
+        data.email.toLowerCase().includes(q) ||
+        (data.name && data.name.toLowerCase().includes(q))
+      ) {
+        users.push(data);
+      }
+    });
+
+    return users;
+  }
 }

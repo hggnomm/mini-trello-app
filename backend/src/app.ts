@@ -8,6 +8,8 @@ import boardRoutes from "./routes/board.route";
 import authRoutes from "./routes/auth.route";
 import cardRoutes from "./routes/card.route";
 import taskRoutes from "./routes/task.route";
+import userRoutes from "./routes/user.route";
+
 import { setupApiDocs } from "./docs/api-docs";
 
 export function createApp(): Express {
@@ -19,6 +21,7 @@ export function createApp(): Express {
   setupApiDocs(app);
 
   app.use("/auth", authRoutes);
+  app.use("/users", userRoutes);
   app.use("/boards", boardRoutes);
   app.use("/boards", cardRoutes);
   app.use("/boards", taskRoutes);
