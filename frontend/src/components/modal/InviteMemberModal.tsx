@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { HiX } from "react-icons/hi";
+import CloseButton from "../../base/baseButton/CloseButton";
 import { inviteUserToBoard, getBoardMembers, type Board, type BoardMember } from "../../api/board";
 import BaseButton from "../../base/baseButton";
 import BaseModal from "../../base/baseModal";
@@ -71,9 +71,7 @@ export default function InviteMemberModal({ isOpen, onClose, board }: InviteMemb
 
   return (
     <BaseModal isOpen={isOpen} onClose={onClose}>
-      <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
-        <HiX size={20} />
-      </button>
+      <CloseButton onClick={onClose} />
 
       <h3 className="text-lg font-bold text-white mb-4">Invite Member</h3>
 

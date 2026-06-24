@@ -17,6 +17,7 @@ type BaseSelectProps = {
   className?: string;
   dropdownClassName?: string;
   triggerClassName?: string;
+  onOpen?: () => void;
 };
 
 const BaseSelect = ({
@@ -26,6 +27,7 @@ const BaseSelect = ({
   className,
   dropdownClassName,
   triggerClassName,
+  onOpen,
 }: BaseSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
@@ -39,6 +41,7 @@ const BaseSelect = ({
         top: rect.bottom + window.scrollY + 4,
         left: rect.left + window.scrollX,
       });
+      onOpen?.();
     }
     setIsOpen((prev) => !prev);
   };

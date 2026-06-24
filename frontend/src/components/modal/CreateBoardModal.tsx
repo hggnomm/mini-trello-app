@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { HiX } from "react-icons/hi";
+import CloseButton from "../../base/baseButton/CloseButton";
 import { createBoard } from "../../api/board";
 import BaseButton from "../../base/baseButton";
 import BaseInput from "../../base/baseInput";
@@ -36,9 +36,7 @@ export default function CreateBoardModal({ isOpen, onClose, onCreated }: CreateB
 
   return (
     <BaseModal isOpen={isOpen} onClose={onClose}>
-      <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
-        <HiX size={20} />
-      </button>
+      <CloseButton onClick={onClose} />
 
       <h3 className="text-lg font-bold text-white mb-4">Create New Board</h3>
 

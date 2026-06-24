@@ -20,6 +20,11 @@ export const getTasks = async (boardId: string, cardId: string): Promise<Task[]>
   return response.data;
 };
 
+export const getTaskById = async (boardId: string, cardId: string, taskId: string): Promise<Task> => {
+  const response = await axiosInstance.get<Task>(`/boards/${boardId}/cards/${cardId}/tasks/${taskId}`);
+  return response.data;
+};
+
 export const getBoardTasks = async (boardId: string): Promise<Task[]> => {
   const response = await axiosInstance.get<Task[]>(`/boards/${boardId}/tasks`);
   return response.data;
@@ -38,7 +43,7 @@ export const updateTask = async (
   boardId: string,
   cardId: string,
   taskId: string,
-  data: { title?: string; description?: string; status?: string },
+  data: { title?: string; description?: string; status?: string; newCardId?: string },
 ): Promise<Task> => {
   const response = await axiosInstance.put<Task>(`/boards/${boardId}/cards/${cardId}/tasks/${taskId}`, data);
   return response.data;

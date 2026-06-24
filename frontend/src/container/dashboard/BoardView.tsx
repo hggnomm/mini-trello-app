@@ -21,14 +21,7 @@ export default function BoardView() {
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
-  const {
-    board,
-    cards,
-    tasksMap,
-    isLoading,
-    handleDragEnd,
-    handleTaskAdded,
-  } = useBoard(boardId, profile?.id);
+  const { board, cards, tasksMap, isLoading, handleDragEnd, handleTaskAdded } = useBoard(boardId, profile?.id);
 
   if (isLoading) {
     return (
@@ -51,6 +44,8 @@ export default function BoardView() {
           </div>
         </BaseButton>
       </div>
+      
+      {/* https://medium.com/codex/how-to-implement-a-simple-drag-and-drop-using-create-react-app-and-react-beautiful-dnd-4e6e57a2299f */}
 
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="flex gap-3 bg-slate-200 overflow-x-auto p-3 flex-1 items-start">
@@ -67,7 +62,6 @@ export default function BoardView() {
           <AddCardButton boardId={board.id} />
         </div>
       </DragDropContext>
-
       {isInviteModalOpen && (
         <InviteMemberModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} board={board} />
       )}

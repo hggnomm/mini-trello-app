@@ -28,12 +28,15 @@ export default function CardColumn({ boardId, card, tasks, onTaskAdded }: CardCo
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={cn("min-h-5 mb-2 flex flex-1 flex-col gap-1.5 overflow-y-auto rounded pr-0.5 transition-colors", {
-              "bg-white/5": snapshot.isDraggingOver,
-            })}
+            className={cn(
+              "min-h-5 mb-2 flex flex-1 flex-col gap-1.5 overflow-y-auto rounded pr-0.5 transition-colors",
+              {
+                "bg-white/5": snapshot.isDraggingOver,
+              },
+            )}
           >
             {tasks.map((task, index) => (
-              <TaskItem key={task.id} task={task} index={index} />
+              <TaskItem key={task.id} task={task} index={index} boardId={boardId} cardId={card.id} cardName={card.name} />
             ))}
 
             {provided.placeholder}

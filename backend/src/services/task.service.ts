@@ -35,6 +35,7 @@ export interface UpdateTaskInput extends TaskParamsInput {
   title?: string;
   description?: string;
   status?: string;
+  newCardId?: string;
 }
 
 export interface ReorderTaskInput {
@@ -65,7 +66,7 @@ export class TaskService implements ITaskService {
 
     if (!boardId) throw new Error("Board Id cannot be null");
     if (!cardId) throw new Error("Card Id cannot be null");
-    
+
     if (!title) throw new Error("Task Title cannot be null");
 
     const board = await this.boardRepository.findById(boardId);
@@ -99,7 +100,7 @@ export class TaskService implements ITaskService {
 
   async getAllTasksForBoard(boardId: string): Promise<Task[]> {
     if (!boardId) throw new Error("Board Id cannot be null");
-    
+
     const board = await this.boardRepository.findById(boardId);
     if (!board) throw new Error("Board not found");
 
@@ -125,7 +126,6 @@ export class TaskService implements ITaskService {
     cardId: string,
     taskId: string,
   ): Promise<Task> {
-    
     this.checkTaskParams({
       boardId,
       cardId,
@@ -147,9 +147,9 @@ export class TaskService implements ITaskService {
   }
 
   async updateTask(input: UpdateTaskInput): Promise<Task> {
-    const { boardId, cardId, taskId, ...data } = input;
+    const { boardId, cardId, taskId, newCardId, title, description, status } =
+      input;
 
-    console.log(cardId)
     this.checkTaskParams(input);
 
     const boardDoc = await this.boardRepository.findById(boardId);
@@ -165,12 +165,34 @@ export class TaskService implements ITaskService {
       throw new Error("Task not found");
     }
 
-    return await this.taskRepository.update(taskId, data);
+    const updateData = {
+      ...(title !== undefined && { title }),
+      ...(description !== undefined && { description }),
+      ...(status !== undefined && { status }),
+    };
+
+    if (newCardId && newCardId !== cardId) {
+      const targetCard = await this.cardRepository.findById(newCardId);
+
+      if (!targetCard || targetCard.boardId !== boardId) {
+        throw new Error("Target card not found");
+      }
+
+      Object.assign(updateData, {
+        cardId: newCardId,
+      });
+    }
+
+    return await this.taskRepository.update(taskId, updateData);
   }
 
-  async reorderTasks(boardId: string, tasks: ReorderTaskInput[]): Promise<void> {
+  async reorderTasks(
+    boardId: string,
+    tasks: ReorderTaskInput[],
+  ): Promise<void> {
     if (!boardId) throw new Error("Board Id cannot be null");
-    if (!tasks || !Array.isArray(tasks)) throw new Error("Tasks array is required");
+    if (!tasks || !Array.isArray(tasks))
+      throw new Error("Tasks array is required");
 
     const boardDoc = await this.boardRepository.findById(boardId);
     if (!boardDoc) throw new Error("Board not found");
@@ -231,7 +253,7 @@ export class TaskService implements ITaskService {
     const isBoardOwner = board.ownerId === memberId;
 
     const isAcceptedMember = board.listMembers?.[memberId] === "accepted";
-    
+
     if (!isBoardOwner && !isAcceptedMember) {
       throw new Error("Member is not in this board");
     }
@@ -250,7 +272,7 @@ export class TaskService implements ITaskService {
     const { boardId, cardId, taskId, memberId } = input;
 
     this.checkTaskParams(input);
-    
+
     if (!memberId) throw new Error("Member Id cannot be null");
 
     const card = await this.cardRepository.findById(cardId);
@@ -263,7 +285,7 @@ export class TaskService implements ITaskService {
       throw new Error("Task not found");
     }
 
-    const memberIdNeedRemove = memberId
+    const memberIdNeedRemove = memberId;
 
     const assignedMembers = task.assignedMembers || [];
     if (!assignedMembers.includes(memberIdNeedRemove)) {
@@ -280,9 +302,7 @@ export class TaskService implements ITaskService {
     });
   }
 
-  async getAllMembersOfTask(
-    input: TaskParamsInput,
-  ): Promise<string[]> {
+  async getAllMembersOfTask(input: TaskParamsInput): Promise<string[]> {
     const { boardId, cardId, taskId } = input;
 
     this.checkTaskParams(input);
