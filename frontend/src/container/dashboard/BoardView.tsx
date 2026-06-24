@@ -4,6 +4,7 @@ import { FiPlus } from "react-icons/fi";
 import type { Board } from "@/api/board";
 import { type Card, getCardsByUser } from "@/api/card";
 import CardItem from "@/components/card/CardItem";
+import AddCardButton from "@/components/card/AddCardButton";
 import { useParams, useNavigate } from "react-router-dom";
 import { getBoardById } from "@/api/board";
 import { ROUTES } from "@/constants/route.constant";
@@ -11,25 +12,28 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import BaseSpinner from "@/base/baseSpinner";
 import BaseButton from "@/base/baseButton";
+import { socket } from "@/utils/socket";
+import { SOCKET_EVENTS } from "@/constants/socket.constant";
 
 // ─── Column ───────────────────────────────────────────────────────────────────
 
-function Column({ title, cards }: { title: string; cards: Card[] }) {
+function Column({ boardId, title, cards }: { boardId: string; title: string; cards: Card[] }) {
   return (
     <div className="flex bg-[#0E0F05] w-[272px] min-w-[272px] flex-col p-2.5 max-h-[calc(100vh-200px)]">
-
       {/* Header */}
       <div className="mb-2 flex items-center justify-between border-b border-white/[0.06] pb-2 px-1">
         <span className="text-[0.72rem] font-semibold uppercase tracking-wide text-gray-400">{title}</span>
-        <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[12px] text-white">{cards.length || 0}</span>
+        <span className="rounded-full bg-white/[0.09] px-2 py-0.5 text-[12px] text-white">{cards.length || 0}</span>
       </div>
 
       {/* Cards list */}
-      <div className="flex flex-col gap-1.5 overflow-y-auto flex-1 pr-0.5">
+      <div className="flex flex-col mb-2 gap-1.5 overflow-y-auto flex-1 pr-0.5">
         {cards?.map((card) => (
           <CardItem key={card.id} card={card} />
         ))}
       </div>
+
+      <AddCardButton boardId={boardId} />
     </div>
   );
 }
@@ -57,9 +61,8 @@ export default function BoardView() {
 
       setBoard(boardData);
       setCards(cardsData);
-
-    } catch (e: any) {
-      toast.error(e.message || "Failed to load board data");
+    } catch (e) {
+      toast.error((e instanceof Error && e.message) || "Failed to load board data");
       navigate(ROUTES.DASHBOARD);
     } finally {
       setIsLoading(false);
@@ -69,6 +72,37 @@ export default function BoardView() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    if (!boardId) return;
+
+    const handleCardCreated = (newCard: Card) => {
+      setCards((prev) => {
+        if (prev.some((card) => card.id === newCard.id)) return prev;
+        return [...prev, newCard];
+      });
+    };
+
+    const handleConnect = () => {
+      socket.emit(SOCKET_EVENTS.BOARD_JOIN, boardId);
+    };
+
+    if (socket.connected) {
+      socket.emit(SOCKET_EVENTS.BOARD_JOIN, boardId);
+    } else {
+      socket.once("connect", handleConnect);
+    }
+
+    socket.on(SOCKET_EVENTS.CARD_CREATED, handleCardCreated);
+    socket.connect();
+
+    return () => {
+      socket.emit(SOCKET_EVENTS.BOARD_LEAVE, boardId);
+      socket.off("connect", handleConnect);
+      socket.off(SOCKET_EVENTS.CARD_CREATED, handleCardCreated);
+      socket.disconnect();
+    };
+  }, [boardId]);
 
   if (isLoading) {
     return (
@@ -89,7 +123,7 @@ export default function BoardView() {
       </div>
 
       <div className="flex gap-3 overflow-x-auto p-2 flex-1 items-start">
-        <Column title="Cards" cards={cards} />
+        <Column boardId={board.id} title="Cards" cards={cards} />
 
         <BaseButton variant="outline">
           <div className="flex justify-center items-center gap-2">

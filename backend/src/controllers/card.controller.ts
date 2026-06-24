@@ -5,6 +5,9 @@ import {
   ICardService,
 } from "../services/card.service";
 import { getAuthenticatedUser } from "../utils/auth";
+import { getIo } from "../socket/socket";
+import { SOCKET_EVENTS } from "../constants/socket.constant";
+
 
 export class Cardcontroller {
   private cardService: ICardService = new CardService();
@@ -21,6 +24,14 @@ export class Cardcontroller {
         name,
         description,
       });
+
+      try {
+        const io = getIo();
+        io.to(`board:${boardId}`).emit(SOCKET_EVENTS.CARD_CREATED, newCard);
+      } catch (err) {
+        console.error("Socket emit error:", err);
+      }
+
       res.status(201).json(newCard);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
