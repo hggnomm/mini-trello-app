@@ -8,6 +8,8 @@ const axiosInstance = axios.create({
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
+
+    "Cache-Control": "no-cache",
   },
 });
 
@@ -33,7 +35,7 @@ axiosInstance.interceptors.response.use(
         localStorage.removeItem("accessToken");
         const isAuthPage =
           window.location.pathname.includes(ROUTES.LOGIN) || window.location.pathname.includes(ROUTES.REGISTER);
-          
+
         if (!isAuthPage) {
           window.location.href = ROUTES.LOGIN;
         }
