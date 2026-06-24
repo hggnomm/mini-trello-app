@@ -7,6 +7,7 @@ import { SiGithub } from "react-icons/si";
 import { FaUserCircle } from "react-icons/fa";
 import { ROUTES } from "../constants/route.constant";
 import { clearUser } from "../store/userSlice";
+import { getLinkUrl } from "../api/auth";
 import type { RootState } from "../store/index";
 
 export default function Header() {
@@ -73,14 +74,33 @@ export default function Header() {
             </div>
 
             <div className="mt-4 border-y border-gray-200 py-1">
-              <div className="flex items-center gap-2 px-4 py-2 text-sm">
-                <SiGithub size={16} className="shrink-0 text-gray-600" />
-                {profile?.isGithubLinked ? (
-                  <span className="text-gray-700">
-                    GitHub: <span className="font-medium text-gray-900">@{profile.githubName}</span>
-                  </span>
-                ) : (
-                  <span className="text-gray-400 italic">GitHub not linked</span>
+              <div className="flex items-center justify-between gap-2 px-4 py-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <SiGithub size={16} className="shrink-0 text-gray-600" />
+                  {profile?.isGithubLinked ? (
+                    <span className="text-gray-700">
+                      GitHub:
+                      <span className="font-medium text-gray-900">@{profile.githubName}</span>
+                    </span>
+                  ) : (
+                    <span className="text-gray-400 italic">GitHub not linked</span>
+                  )}
+                </div>
+                {!profile?.isGithubLinked && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const { url } = await getLinkUrl();
+                        window.location.href = url;
+                      } catch {
+                        // ignore
+                      }
+                    }}
+                    className="shrink-0 rounded-md bg-gray-900 px-2.5 py-1 text-xs font-medium text-white hover:bg-gray-700 transition-colors"
+                  >
+                    Connect
+                  </button>
                 )}
               </div>
             </div>

@@ -17,7 +17,9 @@ export interface IAuthService {
   sendOTP(email: string): Promise<void>;
   verifyUser(email: string, mode: "login" | "register"): Promise<void>;
   getGithubSignInUrl(): string;
+  getLinkGithubUrl(userId: string): string;
   signInWithGithub(code: string): Promise<User>;
+  linkGithub(userId: string, code: string): Promise<User>;
   getProfile(userId: string): Promise<User>;
 }
 
@@ -144,15 +146,23 @@ export class AuthService implements IAuthService {
     return updatedUser;
   }
 
-  getGithubSignInUrl(): string {
+  getGithubSignInUrl(state?: string): string {
     const clientId = settings.GITHUB_OAUTH.CLIENT_ID;
     const redirectUri = settings.GITHUB_OAUTH.CALLBACK_URL;
-
     const scope = "read:user user:email";
 
-    return `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
+    let url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
       redirectUri,
     )}&scope=${encodeURIComponent(scope)}`;
+
+    if (state) url += `&state=${state}`;
+
+    return url;
+  }
+
+  getLinkGithubUrl(userId: string): string {
+    const state = Buffer.from(userId).toString("base64");
+    return this.getGithubSignInUrl(state);
   }
 
   async signInWithGithub(code: string): Promise<User> {
@@ -190,6 +200,29 @@ export class AuthService implements IAuthService {
 
     // github account exits by user
     return this.userRepository.update(githubAccountUser.id, {
+      githubName,
+      githubAccessToken: token,
+    });
+  }
+
+  async linkGithub(userId: string, code: string): Promise<User> {
+    const token = await getGithubAccessToken(code);
+    const ghUser = await getGithubUser(token);
+
+    const githubId = ghUser.id.toString();
+    const githubName = ghUser.login;
+
+    const accountHaveLinkGithub =
+      await this.userRepository.findUserByGithubId(githubId);
+
+    if (accountHaveLinkGithub && accountHaveLinkGithub.id !== userId) {
+      throw new Error(
+        `This GitHub account (@${githubName}) is already linked to another account.`,
+      );
+    }
+
+    return this.userRepository.update(userId, {
+      githubId,
       githubName,
       githubAccessToken: token,
     });

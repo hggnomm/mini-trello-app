@@ -13,7 +13,7 @@ export const settings = {
     CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || "",
     CALLBACK_URL:
       process.env.GITHUB_CALLBACK_URL ||
-      "http://localhost:8000/auth/github/callback",
+      "http://localhost:5173/auth/github/callback",
   },
   SMTP: {
     HOST: process.env.SMTP_HOST || "",

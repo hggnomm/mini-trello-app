@@ -3,6 +3,7 @@ import Auth from "../container/auth/Auth.tsx";
 import Dashboard from "../container/dashboard/Dashboard.tsx";
 import Layout from "../components/Layout.tsx";
 import ProtectedRoute from "../components/ProtectedRoute.tsx";
+import GithubCallback from "../container/auth/GithubCallback.tsx";
 import { ROUTES } from "../constants/route.constant.ts";
 
 export const router = createBrowserRouter([
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.DASHBOARD,
         element: <Dashboard />,
+      },
+      {
+        path: ROUTES.GITHUB_CALLBACK,
+        element: <GithubCallback />,
       },
     ],
   },

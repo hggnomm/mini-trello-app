@@ -62,23 +62,36 @@ export class AuthController {
     }
   };
 
-  githubCallback = async (req: Request, res: Response): Promise<void> => {
+  githubLink = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { code } = req.query;
+      const authenticatedUser = getAuthenticatedUser(req);
+      
+      const url = this.authService.getLinkGithubUrl(authenticatedUser.id);
+
+      res.status(200).json({ url });
+    } catch (error: any) {
+      res.status(401).json({ error: error.message });
+    }
+  };
+
+  githubExchange = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const authenticatedUser = getAuthenticatedUser(req);
+      
+      const { code } = req.body;
 
       if (!code) {
         throw new Error("Authorization code is required");
       }
 
-      const user = await this.authService.signInWithGithub(code as string);
+      const user = await this.authService.linkGithub(
+        authenticatedUser.id,
+        code,
+      );
 
       res.status(200).json({
-        user: {
-          id: user.id,
-          email: user.email,
-          githubId: user.githubId,
-          githubName: user.githubName,
-        },
+        githubName: user.githubName,
+        githubId: user.githubId,
       });
     } catch (error: any) {
       res.status(400).json({ error: error.message });

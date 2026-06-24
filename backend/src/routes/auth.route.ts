@@ -12,8 +12,9 @@ router.post("/verify-user", authController.verifyUser);
 
 router.get("/github", authController.githubSignIn);
 
-// change on frontend after
-router.get("/github/callback", authController.githubCallback);
+router.get("/github/link", requireAuth, authController.githubLink);
+
+router.post("/github/exchange", requireAuth, authController.githubExchange);
 
 router.get("/profile", requireAuth, authController.profile);
 

@@ -24,3 +24,13 @@ export const getProfile = async () => {
   const response = await axiosInstance.get("/auth/profile");
   return response.data;
 };
+
+export const getLinkUrl = async (): Promise<{ url: string }> => {
+  const response = await axiosInstance.get("/auth/github/link");
+  return response.data;
+};
+
+export const exchangeGithubCode = async (code: string) => {
+  const response = await axiosInstance.post("/auth/github/exchange", { code });
+  return response.data;
+};
