@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { FiPlus, FiX } from "react-icons/fi";
+import { FiPlus } from "react-icons/fi";
 import type { Board } from "@/api/board";
 import { type Card, getCardsByUser } from "@/api/card";
 import CardItem from "@/components/card/CardItem";

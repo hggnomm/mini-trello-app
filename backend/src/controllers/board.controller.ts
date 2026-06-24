@@ -135,4 +135,14 @@ export class BoardController {
       res.status(400).json({ error: error.message });
     }
   };
+
+  getBoardMembers = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const members = await this.boardService.getBoardMembers(id);
+      res.status(200).json(members);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  };
 }

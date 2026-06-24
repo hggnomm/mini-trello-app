@@ -25,6 +25,9 @@ export interface IBoardService {
   deleteBoard(id: string): Promise<Board | null>;
   inviteUserToBoard(input: InviteMemberIntoBoardInput): Promise<void>;
   acceptBoardInvitation(boardId: string, memberId: string): Promise<void>;
+  getBoardMembers(
+    boardId: string,
+  ): Promise<{ id: string; name: string; email: string }[]>;
 }
 
 export class BoardService implements IBoardService {
@@ -177,5 +180,21 @@ export class BoardService implements IBoardService {
         <p>If you were not expecting this invitation, please ignore this email.</p>
       `,
     };
+  }
+
+  async getBoardMembers(boardId: string) {
+    const board = await this.boardRepository.findById(boardId);
+
+    if (!board) {
+      throw new Error("Board not found");
+    }
+
+    const memberIdsInBoard = [
+      ...new Set([board.ownerId, ...Object.keys(board.listMembers ?? {})]),
+    ];
+
+    return Promise.all(
+      memberIdsInBoard.map((userId) => this.userRepository.findById(userId)),
+    );
   }
 }

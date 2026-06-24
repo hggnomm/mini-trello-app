@@ -13,6 +13,7 @@ router.use(requireAuth);
 router.get("/", boardController.getAllBoards);
 router.post("/", boardController.createBoard);
 router.get("/:id", boardController.getBoardById);
+router.get("/:id/members", boardController.getBoardMembers);
 router.put("/:id", boardController.updateBoardById);
 router.delete("/:id", boardController.deleteBoard);
 

@@ -11,6 +11,12 @@ export interface Board {
   updatedAt?: string;
 }
 
+export interface BoardMember {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export const getBoards = async (): Promise<Board[]> => {
   const response = await axiosInstance.get<Board[]>("/boards");
   return response.data;
@@ -26,9 +32,14 @@ export const getBoardById = async (id: string): Promise<Board> => {
   return response.data;
 };
 
+export const getBoardMembers = async (id: string): Promise<BoardMember[]> => {
+  const response = await axiosInstance.get<BoardMember[]>(`/boards/${id}/members`);
+  return response.data;
+};
+
 export const updateBoard = async (
   id: string,
-  data: { name?: string; description?: string }
+  data: { name?: string; description?: string },
 ): Promise<{ updatedBoard: Board; message: string }> => {
   const response = await axiosInstance.put<{ updatedBoard: Board; message: string }>(`/boards/${id}`, data);
   return response.data;
