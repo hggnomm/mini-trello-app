@@ -6,6 +6,7 @@ import { ROUTES } from "../constants/route.constant.ts";
 import { getProfile } from "../api/auth.ts";
 import { setUser } from "../store/userSlice.ts";
 import type { RootState } from "../store/index.ts";
+import BaseSpinner from "@/base/baseSpinner/index.tsx";
 
 export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const token = localStorage.getItem("accessToken");
@@ -39,7 +40,12 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     fetchProfile();
   }, []);
 
-  if (isFetching) return null;
+  if (isFetching)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <BaseSpinner className="!h-20 !w-20" />
+      </div>
+    );
 
   return <>{children}</>;
 };

@@ -77,14 +77,23 @@ export default function Header() {
               <div className="flex items-center justify-between gap-2 px-4 py-2 text-sm">
                 <div className="flex items-center gap-2">
                   <SiGithub size={16} className="shrink-0 text-gray-600" />
-                  {profile?.isGithubLinked ? (
-                    <span className="text-gray-700">
-                      GitHub:
-                      <span className="font-medium text-gray-900">@{profile.githubName}</span>
-                    </span>
-                  ) : (
-                    <span className="text-gray-400 italic">GitHub not linked</span>
-                  )}
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {profile?.isGithubLinked && profile.githubName && (
+                      <>
+                        GitHub:{" "}
+                        <a
+                          href={`https://github.com/${profile.githubName}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-gray-700 transition hover:text-black hover:underline"
+                        >
+                          <span className="font-medium text-gray-900">@{profile.githubName}</span>
+                        </a>
+                      </>
+                    )}
+
+                    {!profile?.isGithubLinked && <span className="italic text-gray-400">GitHub not linked</span>}
+                  </div>
                 </div>
                 {!profile?.isGithubLinked && (
                   <button
