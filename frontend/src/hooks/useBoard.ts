@@ -10,20 +10,6 @@ import { ROUTES } from "@/constants/route.constant";
 import { SOCKET_EVENTS } from "@/constants/socket.constant";
 import { useBoardSocket } from "@/hooks/useBoardSocket";
 
-function buildTaskMap(cards: Card[], tasks: Task[]): Record<string, Task[]> {
-  const taskMap: Record<string, Task[]> = {};
-
-  for (const card of cards) {
-    const tasksInCard = tasks
-      .filter((task) => task.cardId === card.id)
-      .sort((firstTask, secondTask) => firstTask.order - secondTask.order);
-
-    taskMap[card.id] = tasksInCard;
-  }
-
-  return taskMap;
-}
-
 export function useBoard(boardId: string | undefined, profileId: string | undefined) {
   const navigate = useNavigate();
 
@@ -32,10 +18,9 @@ export function useBoard(boardId: string | undefined, profileId: string | undefi
   const [tasksMap, setTasksMap] = useState<Record<string, Task[]>>({});
   const [isLoading, setIsLoading] = useState(true);
 
+  // ── Fetch board + cards + tasks ────────────────────────────────────────────
   const fetchData = useCallback(async () => {
-    if (!boardId || !profileId) {
-      return;
-    }
+    if (!boardId || !profileId) return;
 
     try {
       setIsLoading(true);
@@ -48,9 +33,21 @@ export function useBoard(boardId: string | undefined, profileId: string | undefi
 
       setBoard(boardData);
       setCards(cardsData);
-      setTasksMap(buildTaskMap(cardsData, tasksData));
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to load board data");
+
+      const groupedTasks = cardsData.reduce(
+        (acc, card) => {
+          acc[card.id] = tasksData
+            .filter((t) => t.cardId === card.id)
+            .sort((a, b) => a.order - b.order);
+
+          return acc;
+        },
+        {} as Record<string, Task[]>,
+      );
+
+      setTasksMap(groupedTasks);
+    } catch (e) {
+      toast.error((e instanceof Error && e.message) || "Failed to load board data");
       navigate(ROUTES.DASHBOARD);
     } finally {
       setIsLoading(false);
@@ -61,139 +58,137 @@ export function useBoard(boardId: string | undefined, profileId: string | undefi
     fetchData();
   }, [fetchData]);
 
+  // ── Socket: listen for new cards/tasks ─────────────────────────────────────
   useBoardSocket(boardId, {
     [SOCKET_EVENTS.CARD_CREATED]: (newCard: Card) => {
-      setCards((currentCards) => {
-        const cardExists = currentCards.some((card) => card.id === newCard.id);
-
-        if (cardExists) {
-          return currentCards;
+      setCards((prev) => {
+        if (prev.some((c) => c.id === newCard.id)) {
+          return prev;
         }
 
-        return [...currentCards, newCard];
+        return [...prev, newCard];
       });
 
-      setTasksMap((currentTaskMap) => {
-        return {
-          ...currentTaskMap,
-          [newCard.id]: currentTaskMap[newCard.id] ?? [],
-        };
-      });
+      setTasksMap((prev) => ({
+        ...prev,
+        [newCard.id]: prev[newCard.id] || [],
+      }));
     },
 
     [SOCKET_EVENTS.TASK_CREATED]: (newTask: Task) => {
-      setTasksMap((currentTaskMap) => {
-        const currentTasks = currentTaskMap[newTask.cardId] ?? [];
+      setTasksMap((prev) => {
+        const list = prev[newTask.cardId] || [];
 
-        const taskExists = currentTasks.some((task) => task.id === newTask.id);
-
-        if (taskExists) {
-          return currentTaskMap;
+        if (list.some((t) => t.id === newTask.id)) {
+          return prev;
         }
 
         return {
-          ...currentTaskMap,
-          [newTask.cardId]: [...currentTasks, newTask],
+          ...prev,
+          [newTask.cardId]: [...list, newTask],
         };
       });
     },
 
-    [SOCKET_EVENTS.TASK_UPDATED]: async () => {
-      if (!boardId) {
-        return;
-      }
+    [SOCKET_EVENTS.TASK_UPDATED]: () => {
+      if (!boardId) return;
 
-      try {
-        const tasksData = await getBoardTasks(boardId);
+      getBoardTasks(boardId).then((tasksData) => {
+        setCards((prevCards) => {
+          const groupedTasks = prevCards.reduce(
+            (acc, card) => {
+              acc[card.id] = tasksData
+                .filter((t) => t.cardId === card.id)
+                .sort((a, b) => a.order - b.order);
 
-        setTasksMap(() => {
-          return buildTaskMap(cards, tasksData);
+              return acc;
+            },
+            {} as Record<string, Task[]>,
+          );
+
+          setTasksMap(groupedTasks);
+
+          return prevCards;
         });
-      } catch (error) {
-        console.error(error);
-      }
+      });
     },
   });
 
+  // ── Drag and Drop Logic ────────────────────────────────────────────────────
   const handleDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
 
-    if (!destination) {
-      return;
-    }
+    if (!destination) return;
 
-    const isSamePosition = source.droppableId === destination.droppableId && source.index === destination.index;
-
-    if (isSamePosition) {
+    if (
+      source.droppableId === destination.droppableId &&
+      source.index === destination.index
+    ) {
       return;
     }
 
     const sourceCardId = source.droppableId;
-    const destinationCardId = destination.droppableId;
+    const destCardId = destination.droppableId;
 
-    const sourceTaskList = [...(tasksMap[sourceCardId] ?? [])];
+    const sourceTasks = Array.from(tasksMap[sourceCardId] || []);
+    const destTasks =
+      sourceCardId === destCardId
+        ? sourceTasks
+        : Array.from(tasksMap[destCardId] || []);
 
-    const destinationTaskList =
-      sourceCardId === destinationCardId ? sourceTaskList : [...(tasksMap[destinationCardId] ?? [])];
+    const [movedTask] = sourceTasks.splice(source.index, 1);
 
-    const [movedTask] = sourceTaskList.splice(source.index, 1);
+    movedTask.cardId = destCardId;
 
-    if (!movedTask) {
-      return;
-    }
+    destTasks.splice(destination.index, 0, movedTask);
 
-    movedTask.cardId = destinationCardId;
-
-    destinationTaskList.splice(destination.index, 0, movedTask);
-
-    destinationTaskList.forEach((task, index) => {
+    // Update order optimistically
+    destTasks.forEach((task, index) => {
       task.order = index + 1;
     });
 
-    if (sourceCardId !== destinationCardId) {
-      sourceTaskList.forEach((task, index) => {
+    if (sourceCardId !== destCardId) {
+      sourceTasks.forEach((task, index) => {
         task.order = index + 1;
       });
     }
 
-    setTasksMap((currentTaskMap) => {
-      return {
-        ...currentTaskMap,
-        [sourceCardId]: sourceTaskList,
-        [destinationCardId]: destinationTaskList,
-      };
-    });
+    setTasksMap((prev) => ({
+      ...prev,
+      [sourceCardId]: sourceTasks,
+      [destCardId]: destTasks,
+    }));
 
     try {
       const updatedTasks =
-        sourceCardId === destinationCardId ? destinationTaskList : [...destinationTaskList, ...sourceTaskList];
+        sourceCardId === destCardId
+          ? destTasks
+          : [...destTasks, ...sourceTasks];
 
-      const payload = updatedTasks.map((task) => ({
-        id: task.id,
-        cardId: task.cardId,
-        order: task.order,
+      const payload = updatedTasks.map((t) => ({
+        id: t.id,
+        cardId: t.cardId,
+        order: t.order,
       }));
 
       await reorderTasks(boardId!, payload);
-    } catch (error) {
-      console.error(error);
-      fetchData();
+    } catch (e) {
+      console.log(e instanceof Error && e.message);
+      fetchData(); // revert
     }
   };
 
   const handleTaskAdded = (task: Task) => {
-    setTasksMap((currentTaskMap) => {
-      const currentTasks = currentTaskMap[task.cardId] ?? [];
+    setTasksMap((prev) => {
+      const list = prev[task.cardId] || [];
 
-      const taskExists = currentTasks.some((currentTask) => currentTask.id === task.id);
-
-      if (taskExists) {
-        return currentTaskMap;
+      if (list.some((t) => t.id === task.id)) {
+        return prev;
       }
 
       return {
-        ...currentTaskMap,
-        [task.cardId]: [...currentTasks, task],
+        ...prev,
+        [task.cardId]: [...list, task],
       };
     });
   };

@@ -53,7 +53,7 @@ export default function BoardView() {
       </div>
 
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="flex gap-3 overflow-x-auto p-3 flex-1 items-start">
+        <div className="flex gap-3 bg-slate-200 overflow-x-auto p-3 flex-1 items-start">
           {cards?.map((card) => (
             <CardColumn
               key={card.id}
