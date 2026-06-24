@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import type { Board } from "@/api/board";
 import { type Card, getCardsByUser } from "@/api/card";
 import AddCardButton from "@/components/card/AddCardButton";
+import InviteMemberModal from "@/components/modal/InviteMemberModal";
 
 import CardColumn from "@/components/card/CardColumn";
 
@@ -14,6 +15,8 @@ import type { RootState } from "@/store";
 import BaseSpinner from "@/base/baseSpinner";
 import { SOCKET_EVENTS } from "@/constants/socket.constant";
 import { useBoardSocket } from "@/hooks/useBoardSocket";
+import BaseButton from "@/base/baseButton";
+import { FiUsers } from "react-icons/fi";
 
 // ─── BoardView ────────────────────────────────────────────────────────────────
 
@@ -25,6 +28,7 @@ export default function BoardView() {
   const [board, setBoard] = useState<Board | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   // ── Fetch board + cards ────────────────────────────────────────────────────
   const fetchData = useCallback(async () => {
@@ -70,6 +74,12 @@ export default function BoardView() {
     <div className="flex h-full flex-col">
       <div className="bg-[#743254] flex items-center justify-between px-4 py-3 shrink-0">
         <h2 className="text-xl font-semibold text-gray-200">{board.name}</h2>
+        <BaseButton variant="outline" onClick={() => setIsInviteModalOpen(true)}>
+          <div className="flex items-center gap-2">
+            <FiUsers size={16} />
+            <p>Invite Member</p>
+          </div>
+        </BaseButton>
       </div>
 
       <div className="flex gap-3 overflow-x-auto p-3 flex-1 items-start">
@@ -79,6 +89,10 @@ export default function BoardView() {
 
         <AddCardButton boardId={board.id} />
       </div>
+
+      {isInviteModalOpen && (
+        <InviteMemberModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} board={board} />
+      )}
     </div>
   );
 }

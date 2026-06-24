@@ -37,6 +37,24 @@ export const getBoardMembers = async (id: string): Promise<BoardMember[]> => {
   return response.data;
 };
 
+export const inviteUserToBoard = async (
+  boardId: string,
+  data: { board_owner_id: string; member_id?: string; email_member?: string },
+): Promise<{ success: boolean }> => {
+  const response = await axiosInstance.post<{ success: boolean }>(`/boards/${boardId}/invite`, data);
+  return response.data;
+};
+
+export const acceptBoardInvitation = async (
+  boardId: string,
+  memberId: string,
+): Promise<{ success: boolean; message: string }> => {
+  const response = await axiosInstance.get<{ success: boolean; message: string }>(
+    `/boards/${boardId}/invite/accept?memberId=${memberId}`,
+  );
+  return response.data;
+};
+
 export const updateBoard = async (
   id: string,
   data: { name?: string; description?: string },

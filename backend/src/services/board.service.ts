@@ -4,6 +4,7 @@ import { sendMail } from "../libs/nodemailer/nodemailer";
 import { UserRepository } from "../repositories/user.repository";
 import { isEmail } from "../utils/email";
 import { logger } from "../utils/logger";
+import { settings } from "../utils/settings";
 
 export interface InviteMemberIntoBoardInput {
   boardId: string;
@@ -129,7 +130,7 @@ export class BoardService implements IBoardService {
     await this.boardRepository.update(boardId, { listMembers });
 
     // current, set redirect callback link on backend, future to change on frontend
-    const acceptLink = `http://localhost:8000/boards/${boardId}/invite/accept?memberId=${memberId}`;
+    const acceptLink = `${settings.FRONTEND_URL}/b/${boardId}/invite/accept?memberId=${memberId}`;
 
     const { subject, htmlMessage } = this.buildBoardInvitationEmail(
       board.name,
