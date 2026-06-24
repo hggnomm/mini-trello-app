@@ -10,50 +10,54 @@ interface AddCardButtonProps {
 
 export default function AddCardButton({ boardId }: AddCardButtonProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const [newCardTitle, setNewCardTitle] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cardName, setCardName] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
   const handleAddCard = async () => {
-    if (!newCardTitle.trim() || !boardId) return;
+    if (!cardName.trim() || !boardId) return;
+
     try {
-      setIsSubmitting(true);
-      await createCard(boardId, { name: newCardTitle.trim() });
-      setNewCardTitle("");
+      setIsCreating(true);
+      
+      await createCard(boardId, { name: cardName.trim() });
+
+      setCardName("");
       setIsAdding(false);
     } catch (e) {
       toast.error((e instanceof Error && e.message) || "Failed to create card");
     } finally {
-      setIsSubmitting(false);
+      setIsCreating(false);
     }
   };
 
   if (isAdding) {
     return (
-      <div className="mt-1 flex flex-col gap-2">
-        <textarea
+      <div className="w-[272px] min-w-[272px] flex flex-col gap-2 bg-[#A16081]/20 border border-[#A16081]/40 rounded-md p-2.5">
+        <input
           autoFocus
-          className="w-full rounded bg-white p-2 text-sm text-black placeholder-gray-500 shadow outline-none resize-none"
-          placeholder="Enter a title or paste a link"
-          rows={2}
-          value={newCardTitle}
-          onChange={(e) => setNewCardTitle(e.target.value)}
+          type="text"
+          className="w-full rounded bg-white p-2 text-sm text-black placeholder-gray-500 shadow outline-none"
+          placeholder="Enter card name..."
+          value={cardName}
+          onChange={(e) => setCardName(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleAddCard();
+            if (e.key === "Enter") handleAddCard();
+            if (e.key === "Escape") {
+              setIsAdding(false);
+              setCardName("");
             }
           }}
         />
         <div className="flex items-center gap-2">
-          <BaseButton variant="primary" onClick={handleAddCard} disabled={isSubmitting}>
+          <BaseButton variant="primary" onClick={handleAddCard} disabled={isCreating}>
             Add card
           </BaseButton>
           <button
             onClick={() => {
               setIsAdding(false);
-              setNewCardTitle("");
+              setCardName("");
             }}
-            className="flex items-center justify-center p-1 text-gray-400 hover:text-white"
+            className="flex items-center justify-center p-1 text-[#A16081] hover:text-white"
           >
             <FiX size={20} />
           </button>
@@ -64,13 +68,13 @@ export default function AddCardButton({ boardId }: AddCardButtonProps) {
 
   return (
     <BaseButton
-      variant="ghost"
+      variant="secondary"
       onClick={() => setIsAdding(true)}
-      className="w-full justify-start px-2 text-white hover:bg-white/[0.09]"
+      className="w-[272px] bg-[#A16081] rounded-md hover:bg-[#9e5579] min-w-[272px] justify-start active:scale-[0.99]"
     >
       <div className="flex justify-center items-center gap-2">
         <FiPlus size={13} />
-        <p>Add a card</p>
+        <p>Add another card</p>
       </div>
     </BaseButton>
   );

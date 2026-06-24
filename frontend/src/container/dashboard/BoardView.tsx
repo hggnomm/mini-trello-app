@@ -1,42 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { FiPlus } from "react-icons/fi";
 import type { Board } from "@/api/board";
 import { type Card, getCardsByUser } from "@/api/card";
-import CardItem from "@/components/card/CardItem";
 import AddCardButton from "@/components/card/AddCardButton";
+
+import CardColumn from "@/components/card/CardColumn";
+
 import { useParams, useNavigate } from "react-router-dom";
 import { getBoardById } from "@/api/board";
 import { ROUTES } from "@/constants/route.constant";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import BaseSpinner from "@/base/baseSpinner";
-import BaseButton from "@/base/baseButton";
 import { socket } from "@/utils/socket";
 import { SOCKET_EVENTS } from "@/constants/socket.constant";
-
-// ─── Column ───────────────────────────────────────────────────────────────────
-
-function Column({ boardId, title, cards }: { boardId: string; title: string; cards: Card[] }) {
-  return (
-    <div className="flex bg-[#0E0F05] w-[272px] min-w-[272px] flex-col p-2.5 max-h-[calc(100vh-200px)]">
-      {/* Header */}
-      <div className="mb-2 flex items-center justify-between border-b border-white/[0.06] pb-2 px-1">
-        <span className="text-[0.72rem] font-semibold uppercase tracking-wide text-gray-400">{title}</span>
-        <span className="rounded-full bg-white/[0.09] px-2 py-0.5 text-[12px] text-white">{cards.length || 0}</span>
-      </div>
-
-      {/* Cards list */}
-      <div className="flex flex-col mb-2 gap-1.5 overflow-y-auto flex-1 pr-0.5">
-        {cards?.map((card) => (
-          <CardItem key={card.id} card={card} />
-        ))}
-      </div>
-
-      <AddCardButton boardId={boardId} />
-    </div>
-  );
-}
 
 // ─── BoardView ────────────────────────────────────────────────────────────────
 
@@ -49,16 +26,12 @@ export default function BoardView() {
   const [cards, setCards] = useState<Card[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // ── Fetch board + cards ────────────────────────────────────────────────────
   const fetchData = useCallback(async () => {
-    if (!boardId) return;
+    if (!boardId || !profile?.id) return;
     try {
       setIsLoading(true);
-
-      const [boardData, cardsData] = await Promise.all([
-        getBoardById(boardId),
-        getCardsByUser(boardId, profile?.id || ""),
-      ]);
-
+      const [boardData, cardsData] = await Promise.all([getBoardById(boardId), getCardsByUser(boardId, profile.id)]);
       setBoard(boardData);
       setCards(cardsData);
     } catch (e) {
@@ -67,18 +40,19 @@ export default function BoardView() {
     } finally {
       setIsLoading(false);
     }
-  }, [boardId, navigate, profile?.id]);
+  }, [boardId, profile?.id, navigate]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
+  // ── Socket: join room, listen for new cards ────────────────────────────────
   useEffect(() => {
     if (!boardId) return;
 
     const handleCardCreated = (newCard: Card) => {
       setCards((prev) => {
-        if (prev.some((card) => card.id === newCard.id)) return prev;
+        if (prev.some((c) => c.id === newCard.id)) return prev;
         return [...prev, newCard];
       });
     };
@@ -115,22 +89,17 @@ export default function BoardView() {
   if (!board) return null;
 
   return (
-    <div className="flex h-full flex-col bg-white">
-      <div className="bg-[#743254] flex items-center justify-between px-4 py-3">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-200">{board.name}</h2>
-        </div>
+    <div className="flex h-full flex-col">
+      <div className="bg-[#743254] flex items-center justify-between px-4 py-3 shrink-0">
+        <h2 className="text-xl font-semibold text-gray-200">{board.name}</h2>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto p-2 flex-1 items-start">
-        <Column boardId={board.id} title="Cards" cards={cards} />
+      <div className="flex gap-3 overflow-x-auto p-3 flex-1 items-start">
+        {cards?.map((card) => (
+          <CardColumn key={card.id} boardId={board.id} card={card} />
+        ))}
 
-        <BaseButton variant="outline">
-          <div className="flex justify-center items-center gap-2">
-            <FiPlus size={13} />
-            <p>Add another list</p>
-          </div>
-        </BaseButton>
+        <AddCardButton boardId={board.id} />
       </div>
     </div>
   );
