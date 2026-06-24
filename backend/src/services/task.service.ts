@@ -5,9 +5,11 @@ import { TaskRepository } from "../repositories/task.repository";
 
 export interface ITaskService {
   createTaskWithInCard(input: CreateTaskInput): Promise<Task>;
+  getAllTasksForBoard(boardId: string): Promise<Task[]>;
   getAllTasks(boardId: string, cardId: string): Promise<Task[]>;
   getTaskById(boardId: string, cardId: string, taskId: string): Promise<Task>;
   updateTask(input: UpdateTaskInput): Promise<Task>;
+  reorderTasks(boardId: string, tasks: ReorderTaskInput[]): Promise<void>;
   deleteTask(input: TaskParamsInput): Promise<void>;
   assignMemberToTask(input: AssignMemberToTaskInput): Promise<Task>;
   removeMemberFromTask(input: AssignMemberToTaskInput): Promise<void>;
@@ -32,6 +34,13 @@ export interface TaskParamsInput {
 export interface UpdateTaskInput extends TaskParamsInput {
   title?: string;
   description?: string;
+  status?: string;
+}
+
+export interface ReorderTaskInput {
+  id: string;
+  cardId: string;
+  order: number;
 }
 
 export interface AssignMemberToTaskInput extends TaskParamsInput {
@@ -56,6 +65,7 @@ export class TaskService implements ITaskService {
 
     if (!boardId) throw new Error("Board Id cannot be null");
     if (!cardId) throw new Error("Card Id cannot be null");
+    
     if (!title) throw new Error("Task Title cannot be null");
 
     const board = await this.boardRepository.findById(boardId);
@@ -85,6 +95,16 @@ export class TaskService implements ITaskService {
       order: taskOrder,
     };
     return await this.taskRepository.create(dataTask);
+  }
+
+  async getAllTasksForBoard(boardId: string): Promise<Task[]> {
+    if (!boardId) throw new Error("Board Id cannot be null");
+    
+    const board = await this.boardRepository.findById(boardId);
+    if (!board) throw new Error("Board not found");
+
+    const tasks = await this.taskRepository.findTasksByBoardId(boardId);
+    return tasks.sort((a, b) => a.order - b.order);
   }
 
   async getAllTasks(boardId: string, cardId: string): Promise<Task[]> {
@@ -146,6 +166,28 @@ export class TaskService implements ITaskService {
     }
 
     return await this.taskRepository.update(taskId, data);
+  }
+
+  async reorderTasks(boardId: string, tasks: ReorderTaskInput[]): Promise<void> {
+    if (!boardId) throw new Error("Board Id cannot be null");
+    if (!tasks || !Array.isArray(tasks)) throw new Error("Tasks array is required");
+
+    const boardDoc = await this.boardRepository.findById(boardId);
+    if (!boardDoc) throw new Error("Board not found");
+
+    const updatePromises = tasks.map(async (task) => {
+      if (!task.id || !task.cardId || typeof task.order !== "number") return;
+
+      const existingTask = await this.taskRepository.findById(task.id);
+      if (!existingTask || existingTask.boardId !== boardId) return;
+
+      return this.taskRepository.update(task.id, {
+        cardId: task.cardId,
+        order: task.order,
+      });
+    });
+
+    await Promise.all(updatePromises);
   }
 
   async deleteTask(input: TaskParamsInput): Promise<void> {

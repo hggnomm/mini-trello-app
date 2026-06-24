@@ -28,4 +28,20 @@ export class TaskRepository extends BaseRepository {
     });
     return tasks;
   }
+
+  async findTasksByBoardId(boardId: string): Promise<Task[]> {
+    const snapshot = await this.getCollection()
+      .where("boardId", "==", boardId)
+      .get();
+
+    const tasks: Task[] = [];
+    
+    snapshot.forEach((doc: any) => {
+      const data = doc.data();
+      if (data) {
+        tasks.push(data as Task);
+      }
+    });
+    return tasks;
+  }
 }

@@ -7,6 +7,9 @@ const taskController = new TaskController();
 
 router.use(requireAuth);
 
+router.get("/:boardId/tasks", taskController.getBoardTasks);
+router.put("/:boardId/tasks/reorder", taskController.reorderTasks);
+
 router.post("/:boardId/cards/:cardId/tasks", taskController.createCard);
 router.get("/:boardId/cards/:cardId/tasks", taskController.getAllTasks);
 router.get("/:boardId/cards/:cardId/tasks/:taskId", taskController.getTaskById);

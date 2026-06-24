@@ -1,57 +1,18 @@
-import { useEffect, useState } from "react";
-
+import { Droppable } from "@hello-pangea/dnd";
 import { type Card } from "@/api/card";
-import { type Task, getTasks } from "@/api/task";
+import { type Task } from "@/api/task";
 import AddTaskButton from "@/components/task/AddTaskButton";
-import { toast } from "react-toastify";
-import { useBoardSocket } from "@/hooks/useBoardSocket";
-import { SOCKET_EVENTS } from "@/constants/socket.constant";
+import TaskItem from "@/components/task/TaskItem";
+import { cn } from "@/utils/cn";
 
 interface CardColumnProps {
   boardId: string;
   card: Card;
+  tasks: Task[];
+  onTaskAdded?: (task: Task) => void;
 }
 
-export default function CardColumn({ boardId, card }: CardColumnProps) {
-  const [tasks, setTasks] = useState<Task[]>([]);
-
-  useEffect(() => {
-    if (!boardId || !card.id) return;
-
-    let cancelled = false;
-
-    getTasks(boardId, card.id)
-      .then((data) => {
-        if (!cancelled) setTasks(data);
-      })
-      .catch((e) => {
-        toast.error((e instanceof Error && e.message) || "Failed to load tasks");
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [boardId, card.id]);
-
-  const handleTaskAdded = (newTask: Task) => {
-    setTasks((prev) => (prev.some((task) => task.id === newTask.id) ? prev : [...prev, newTask]));
-  };
-
-  useBoardSocket(boardId, {
-    [SOCKET_EVENTS.TASK_CREATED]: (newTask: Task) => {
-      if (newTask.cardId === card.id) {
-        setTasks((prev) => (prev.some((task) => task.id === newTask.id) ? prev : [...prev, newTask]));
-      }
-    },
-    [SOCKET_EVENTS.TASK_UPDATED]: () => {
-      getTasks(boardId, card.id)
-        .then(setTasks)
-        .catch((e) => {
-          toast.error((e instanceof Error && e.message) || "Failed to load tasks");
-        });
-    },
-  });
-
+export default function CardColumn({ boardId, card, tasks, onTaskAdded }: CardColumnProps) {
   return (
     <div className="flex w-[272px] min-w-[272px] max-h-[calc(100vh-140px)] flex-col rounded-md bg-[#0E0F05] p-2.5">
       <div className="mb-2 flex items-center justify-between border-b border-white/10 px-1 pb-2">
@@ -62,18 +23,25 @@ export default function CardColumn({ boardId, card }: CardColumnProps) {
         </span>
       </div>
 
-      <div className="mb-2 flex flex-1 flex-col gap-1.5 overflow-y-auto pr-0.5">
-        {tasks.map((task) => (
+      <Droppable droppableId={card.id}>
+        {(provided, snapshot) => (
           <div
-            key={task.id}
-            className="flex cursor-pointer items-start gap-2 rounded border border-white/5 bg-[#1E2329] px-2 py-2.5 text-sm text-gray-300 transition-colors hover:border-white/10"
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            className={cn("min-h-5 mb-2 flex flex-1 flex-col gap-1.5 overflow-y-auto rounded pr-0.5 transition-colors", {
+              "bg-white/5": snapshot.isDraggingOver,
+            })}
           >
-            <span className="flex-1 break-words leading-snug">{task.title}</span>
-          </div>
-        ))}
+            {tasks.map((task, index) => (
+              <TaskItem key={task.id} task={task} index={index} />
+            ))}
 
-        <AddTaskButton boardId={boardId} cardId={card.id} onTaskAdded={handleTaskAdded} />
-      </div>
+            {provided.placeholder}
+
+            <AddTaskButton boardId={boardId} cardId={card.id} onTaskAdded={onTaskAdded} />
+          </div>
+        )}
+      </Droppable>
     </div>
   );
 }

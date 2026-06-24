@@ -88,6 +88,28 @@ export class TaskController {
     }
   };
 
+  getBoardTasks = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { boardId } = req.params;
+      getAuthenticatedUser(req);
+
+      const tasks = await this.taskService.getAllTasksForBoard(boardId);
+
+      const responseData = tasks.map((task) => ({
+        id: task.id,
+        cardId: task.cardId,
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        order: task.order,
+      }));
+
+      res.status(200).json(responseData);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
+
   getTaskById = async (req: Request, res: Response): Promise<void> => {
     try {
       const { boardId, cardId, taskId } = req.params;
@@ -133,6 +155,30 @@ export class TaskController {
         id: updatedTask.id,
         cardId: updatedTask.cardId,
       });
+    } catch (error: any) {
+      res.status(400).json({
+        error: error.message,
+      });
+    }
+  };
+
+  reorderTasks = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { boardId } = req.params;
+      const { tasks } = req.body; // Array of { id, cardId, order }
+
+      getAuthenticatedUser(req);
+
+      await this.taskService.reorderTasks(boardId, tasks);
+
+      try {
+        const io = getIo();
+        io.to(`board:${boardId}`).emit(SOCKET_EVENTS.TASK_UPDATED, {});
+      } catch (err) {
+        console.error("Socket emit error:", err);
+      }
+
+      res.status(200).json({ success: true });
     } catch (error: any) {
       res.status(400).json({
         error: error.message,

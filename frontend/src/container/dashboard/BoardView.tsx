@@ -1,64 +1,34 @@
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import type { Board } from "@/api/board";
-import { type Card, getCardsByUser } from "@/api/card";
-import AddCardButton from "@/components/card/AddCardButton";
-import InviteMemberModal from "@/components/modal/InviteMemberModal";
-
-import CardColumn from "@/components/card/CardColumn";
-
-import { useParams, useNavigate } from "react-router-dom";
-import { getBoardById } from "@/api/board";
-import { ROUTES } from "@/constants/route.constant";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/store";
-import BaseSpinner from "@/base/baseSpinner";
-import { SOCKET_EVENTS } from "@/constants/socket.constant";
-import { useBoardSocket } from "@/hooks/useBoardSocket";
-import BaseButton from "@/base/baseButton";
+import { DragDropContext } from "@hello-pangea/dnd";
 import { FiUsers } from "react-icons/fi";
+
+import type { RootState } from "@/store";
+import { useBoard } from "@/hooks/useBoard";
+
+import AddCardButton from "@/components/card/AddCardButton";
+import CardColumn from "@/components/card/CardColumn";
+import InviteMemberModal from "@/components/modal/InviteMemberModal";
+import BaseSpinner from "@/base/baseSpinner";
+import BaseButton from "@/base/baseButton";
 
 // ─── BoardView ────────────────────────────────────────────────────────────────
 
 export default function BoardView() {
   const { boardId } = useParams<{ boardId: string }>();
-  const navigate = useNavigate();
   const profile = useSelector((state: RootState) => state.user.profile);
 
-  const [board, setBoard] = useState<Board | null>(null);
-  const [cards, setCards] = useState<Card[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
-  // ── Fetch board + cards ────────────────────────────────────────────────────
-  const fetchData = useCallback(async () => {
-    if (!boardId || !profile?.id) return;
-    try {
-      setIsLoading(true);
-      const [boardData, cardsData] = await Promise.all([getBoardById(boardId), getCardsByUser(boardId, profile.id)]);
-      setBoard(boardData);
-      setCards(cardsData);
-    } catch (e) {
-      toast.error((e instanceof Error && e.message) || "Failed to load board data");
-      navigate(ROUTES.DASHBOARD);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [boardId, profile?.id, navigate]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // ── Socket: listen for new cards ───────────────────────────────────────────
-  useBoardSocket(boardId, {
-    [SOCKET_EVENTS.CARD_CREATED]: (newCard: Card) => {
-      setCards((prev) => {
-        if (prev.some((c) => c.id === newCard.id)) return prev;
-        return [...prev, newCard];
-      });
-    },
-  });
+  const {
+    board,
+    cards,
+    tasksMap,
+    isLoading,
+    handleDragEnd,
+    handleTaskAdded,
+  } = useBoard(boardId, profile?.id);
 
   if (isLoading) {
     return (
@@ -82,13 +52,21 @@ export default function BoardView() {
         </BaseButton>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto p-3 flex-1 items-start">
-        {cards?.map((card) => (
-          <CardColumn key={card.id} boardId={board.id} card={card} />
-        ))}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <div className="flex gap-3 overflow-x-auto p-3 flex-1 items-start">
+          {cards?.map((card) => (
+            <CardColumn
+              key={card.id}
+              boardId={board.id}
+              card={card}
+              tasks={tasksMap[card.id] || []}
+              onTaskAdded={handleTaskAdded}
+            />
+          ))}
 
-        <AddCardButton boardId={board.id} />
-      </div>
+          <AddCardButton boardId={board.id} />
+        </div>
+      </DragDropContext>
 
       {isInviteModalOpen && (
         <InviteMemberModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} board={board} />
