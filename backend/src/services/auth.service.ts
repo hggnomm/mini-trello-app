@@ -18,6 +18,7 @@ export interface IAuthService {
   verifyUser(email: string, mode: "login" | "register"): Promise<void>;
   getGithubSignInUrl(): string;
   signInWithGithub(code: string): Promise<User>;
+  getProfile(userId: string): Promise<User>;
 }
 
 export class AuthService implements IAuthService {
@@ -192,5 +193,11 @@ export class AuthService implements IAuthService {
       githubName,
       githubAccessToken: token,
     });
+  }
+
+  async getProfile(userId: string): Promise<User> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) throw new Error("User not found");
+    return user;
   }
 }

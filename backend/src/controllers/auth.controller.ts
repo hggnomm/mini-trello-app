@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { AuthService, IAuthService } from "../services/auth.service";
 import { isEmail } from "../utils/email";
+import { getAuthenticatedUser } from "../utils/auth";
 
 export class AuthController {
   private authService: IAuthService = new AuthService();
@@ -99,6 +100,29 @@ export class AuthController {
       });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
+    }
+  };
+
+  profile = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const authenticatedUser = getAuthenticatedUser(req);
+
+      const user = await this.authService.getProfile(authenticatedUser.id);
+
+      res.status(200).json({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        isVerified: user.isVerified,
+        githubId: user.githubId ?? null,
+        githubName: user.githubName ?? null,
+        isGithubLinked: !!user.githubId,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      });
+    } catch (error: any) {
+      res.status(401).json({ error: error.message });
     }
   };
 }
