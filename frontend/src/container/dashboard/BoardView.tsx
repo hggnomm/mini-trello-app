@@ -12,8 +12,8 @@ import { ROUTES } from "@/constants/route.constant";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import BaseSpinner from "@/base/baseSpinner";
-import { socket } from "@/utils/socket";
 import { SOCKET_EVENTS } from "@/constants/socket.constant";
+import { useBoardSocket } from "@/hooks/useBoardSocket";
 
 // ─── BoardView ────────────────────────────────────────────────────────────────
 
@@ -46,37 +46,15 @@ export default function BoardView() {
     fetchData();
   }, [fetchData]);
 
-  // ── Socket: join room, listen for new cards ────────────────────────────────
-  useEffect(() => {
-    if (!boardId) return;
-
-    const handleCardCreated = (newCard: Card) => {
+  // ── Socket: listen for new cards ───────────────────────────────────────────
+  useBoardSocket(boardId, {
+    [SOCKET_EVENTS.CARD_CREATED]: (newCard: Card) => {
       setCards((prev) => {
         if (prev.some((c) => c.id === newCard.id)) return prev;
         return [...prev, newCard];
       });
-    };
-
-    const handleConnect = () => {
-      socket.emit(SOCKET_EVENTS.BOARD_JOIN, boardId);
-    };
-
-    if (socket.connected) {
-      socket.emit(SOCKET_EVENTS.BOARD_JOIN, boardId);
-    } else {
-      socket.once("connect", handleConnect);
-    }
-
-    socket.on(SOCKET_EVENTS.CARD_CREATED, handleCardCreated);
-    socket.connect();
-
-    return () => {
-      socket.emit(SOCKET_EVENTS.BOARD_LEAVE, boardId);
-      socket.off("connect", handleConnect);
-      socket.off(SOCKET_EVENTS.CARD_CREATED, handleCardCreated);
-      socket.disconnect();
-    };
-  }, [boardId]);
+    },
+  });
 
   if (isLoading) {
     return (

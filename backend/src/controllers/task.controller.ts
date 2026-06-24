@@ -7,6 +7,8 @@ import {
   UpdateTaskInput,
 } from "../services/task.service";
 import { Task } from "../models/task.model";
+import { getIo } from "../socket/socket";
+import { SOCKET_EVENTS } from "../constants/socket.constant";
 
 export type CreateTaskResponse = Pick<
   Task,
@@ -50,6 +52,13 @@ export class TaskController {
         description: newTask.description,
         status: newTask.status,
       };
+
+      try {
+        const io = getIo();
+        io.to(`board:${boardId}`).emit(SOCKET_EVENTS.TASK_CREATED, responseData);
+      } catch (err) {
+        console.error("Socket emit error:", err);
+      }
 
       res.status(201).json(responseData);
     } catch (error: any) {
@@ -109,6 +118,16 @@ export class TaskController {
       };
 
       const updatedTask = await this.taskService.updateTask(input);
+
+      try {
+        const io = getIo();
+        io.to(`board:${input.boardId}`).emit(SOCKET_EVENTS.TASK_UPDATED, {
+          id: updatedTask.id,
+          cardId: updatedTask.cardId,
+        });
+      } catch (err) {
+        console.error("Socket emit error:", err);
+      }
 
       res.status(200).json({
         id: updatedTask.id,

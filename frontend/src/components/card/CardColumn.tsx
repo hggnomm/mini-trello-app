@@ -4,6 +4,8 @@ import { type Card } from "@/api/card";
 import { type Task, getTasks } from "@/api/task";
 import AddTaskButton from "@/components/task/AddTaskButton";
 import { toast } from "react-toastify";
+import { useBoardSocket } from "@/hooks/useBoardSocket";
+import { SOCKET_EVENTS } from "@/constants/socket.constant";
 
 interface CardColumnProps {
   boardId: string;
@@ -34,6 +36,21 @@ export default function CardColumn({ boardId, card }: CardColumnProps) {
   const handleTaskAdded = (newTask: Task) => {
     setTasks((prev) => (prev.some((task) => task.id === newTask.id) ? prev : [...prev, newTask]));
   };
+
+  useBoardSocket(boardId, {
+    [SOCKET_EVENTS.TASK_CREATED]: (newTask: Task) => {
+      if (newTask.cardId === card.id) {
+        setTasks((prev) => (prev.some((task) => task.id === newTask.id) ? prev : [...prev, newTask]));
+      }
+    },
+    [SOCKET_EVENTS.TASK_UPDATED]: () => {
+      getTasks(boardId, card.id)
+        .then(setTasks)
+        .catch((e) => {
+          toast.error((e instanceof Error && e.message) || "Failed to load tasks");
+        });
+    },
+  });
 
   return (
     <div className="flex w-[272px] min-w-[272px] max-h-[calc(100vh-140px)] flex-col rounded-md bg-[#0E0F05] p-2.5">
