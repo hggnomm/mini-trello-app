@@ -7,7 +7,12 @@ import { socket } from "@/utils/socket";
 type BoardSocketEventHandlers = {
   [SOCKET_EVENTS.CARD_CREATED]?: (card: Card) => void;
   [SOCKET_EVENTS.TASK_CREATED]?: (task: Task) => void;
-  [SOCKET_EVENTS.TASK_UPDATED]?: (payload: { id: string; cardId: string }) => void;
+  [SOCKET_EVENTS.TASK_UPDATED]?: (
+    payload: { id: string; cardId: string; task?: Partial<Task> } | Record<string, never>,
+  ) => void;
+  [SOCKET_EVENTS.TASK_DELETED]?: (payload: { id: string; cardId: string }) => void;
+  [SOCKET_EVENTS.MEMBER_ASSIGNED]?: (payload: { taskId: string; cardId: string; memberId: string }) => void;
+  [SOCKET_EVENTS.MEMBER_REMOVED]?: (payload: { taskId: string; cardId: string; memberId: string }) => void;
 };
 
 type SocketListener = (...args: unknown[]) => void;

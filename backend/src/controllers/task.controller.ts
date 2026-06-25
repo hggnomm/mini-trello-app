@@ -154,6 +154,14 @@ export class TaskController {
         io.to(`board:${input.boardId}`).emit(SOCKET_EVENTS.TASK_UPDATED, {
           id: updatedTask.id,
           cardId: updatedTask.cardId,
+          task: {
+            id: updatedTask.id,
+            cardId: updatedTask.cardId,
+            title: updatedTask.title,
+            description: updatedTask.description,
+            status: updatedTask.status,
+            order: updatedTask.order,
+          },
         });
       } catch (err) {
         console.error("Socket emit error:", err);
@@ -196,7 +204,19 @@ export class TaskController {
 
   deleteTask = async (req: Request, res: Response): Promise<void> => {
     try {
-      await this.taskService.deleteTask(this.getTaskParams(req));
+      const params = this.getTaskParams(req);
+
+      await this.taskService.deleteTask(params);
+
+      try {
+        const io = getIo();
+        io.to(`board:${params.boardId}`).emit(SOCKET_EVENTS.TASK_DELETED, {
+          id: params.taskId,
+          cardId: params.cardId,
+        });
+      } catch (err) {
+        console.error("Socket emit error:", err);
+      }
 
       res.status(204).send();
     } catch (error: any) {
@@ -216,6 +236,17 @@ export class TaskController {
       };
 
       const task = await this.taskService.assignMemberToTask(input);
+
+      try {
+        const io = getIo();
+        io.to(`board:${input.boardId}`).emit(SOCKET_EVENTS.MEMBER_ASSIGNED, {
+          taskId: task.id,
+          cardId: task.cardId,
+          memberId,
+        });
+      } catch (err) {
+        console.error("Socket emit error:", err);
+      }
 
       res.status(201).json({
         taskId: task.id,
@@ -257,6 +288,17 @@ export class TaskController {
         ...input,
         memberId,
       });
+
+      try {
+        const io = getIo();
+        io.to(`board:${input.boardId}`).emit(SOCKET_EVENTS.MEMBER_REMOVED, {
+          taskId: input.taskId,
+          cardId: input.cardId,
+          memberId,
+        });
+      } catch (err) {
+        console.error("Socket emit error:", err);
+      }
 
       res.status(204).send();
     } catch (error: any) {

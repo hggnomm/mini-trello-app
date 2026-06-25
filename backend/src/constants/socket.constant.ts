@@ -4,4 +4,7 @@ export const SOCKET_EVENTS = {
   CARD_CREATED: "card:created",
   TASK_CREATED: "task:created",
   TASK_UPDATED: "task:updated",
+  TASK_DELETED: "task:deleted",
+  MEMBER_ASSIGNED: "member:assigned",
+  MEMBER_REMOVED: "member:removed",
 } as const;

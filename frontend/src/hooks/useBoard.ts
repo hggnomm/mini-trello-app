@@ -36,9 +36,7 @@ export function useBoard(boardId: string | undefined, profileId: string | undefi
 
       const groupedTasks = cardsData.reduce(
         (acc, card) => {
-          acc[card.id] = tasksData
-            .filter((t) => t.cardId === card.id)
-            .sort((a, b) => a.order - b.order);
+          acc[card.id] = tasksData.filter((t) => t.cardId === card.id).sort((a, b) => a.order - b.order);
 
           return acc;
         },
@@ -58,7 +56,7 @@ export function useBoard(boardId: string | undefined, profileId: string | undefi
     fetchData();
   }, [fetchData]);
 
-  // ── Socket: listen for new cards/tasks ─────────────────────────────────────
+  // ── Socket: listen for board changes ───────────────────────────────────────
   useBoardSocket(boardId, {
     [SOCKET_EVENTS.CARD_CREATED]: (newCard: Card) => {
       setCards((prev) => {
@@ -90,26 +88,112 @@ export function useBoard(boardId: string | undefined, profileId: string | undefi
       });
     },
 
-    [SOCKET_EVENTS.TASK_UPDATED]: () => {
+    [SOCKET_EVENTS.TASK_UPDATED]: (payload) => {
       if (!boardId) return;
 
-      getBoardTasks(boardId).then((tasksData) => {
-        setCards((prevCards) => {
-          const groupedTasks = prevCards.reduce(
-            (acc, card) => {
-              acc[card.id] = tasksData
-                .filter((t) => t.cardId === card.id)
-                .sort((a, b) => a.order - b.order);
+      if (payload && "task" in payload && payload.task) {
+        const updatedTask = payload.task as Task;
+        setTasksMap((prev) => {
+          const list = prev[updatedTask.cardId] || [];
+          const exists = list.some((t) => t.id === updatedTask.id);
 
-              return acc;
-            },
-            {} as Record<string, Task[]>,
-          );
+          if (!exists) {
+            return {
+              ...prev,
+              [updatedTask.cardId]: [...list, updatedTask],
+            };
+          }
 
-          setTasksMap(groupedTasks);
+          const updatedList = list.map((t) => (t.id === updatedTask.id ? updatedTask : t));
 
-          return prevCards;
+          return {
+            ...prev,
+            [updatedTask.cardId]: updatedList,
+          };
         });
+      } else {
+        getBoardTasks(boardId).then((tasksData) => {
+          setCards((prevCards) => {
+            const groupedTasks = prevCards.reduce(
+              (acc, card) => {
+                acc[card.id] = tasksData.filter((t) => t.cardId === card.id).sort((a, b) => a.order - b.order);
+
+                return acc;
+              },
+              {} as Record<string, Task[]>,
+            );
+
+            setTasksMap(groupedTasks);
+
+            return prevCards;
+          });
+        });
+      }
+    },
+
+    [SOCKET_EVENTS.TASK_DELETED]: (payload) => {
+      if (!boardId) return;
+
+      setTasksMap((prev) => {
+        const list = prev[payload.cardId] || [];
+        const filtered = list.filter((t) => t.id !== payload.id);
+
+        return {
+          ...prev,
+          [payload.cardId]: filtered,
+        };
+      });
+    },
+
+    [SOCKET_EVENTS.MEMBER_ASSIGNED]: (payload) => {
+      if (!boardId) return;
+
+      setTasksMap((prev) => {
+        const list = prev[payload.cardId] || [];
+        const task = list.find((t) => t.id === payload.taskId);
+
+        if (!task) {
+          return prev;
+        }
+
+        if (task.assignedMembers?.includes(payload.memberId)) {
+          return prev;
+        }
+
+        const updatedList = list.map((t) =>
+          t.id === payload.taskId
+            ? {
+                ...t,
+                assignedMembers: [...(t.assignedMembers || []), payload.memberId],
+              }
+            : t,
+        );
+
+        return {
+          ...prev,
+          [payload.cardId]: updatedList,
+        };
+      });
+    },
+
+    [SOCKET_EVENTS.MEMBER_REMOVED]: (payload) => {
+      if (!boardId) return;
+
+      setTasksMap((prev) => {
+        const list = prev[payload.cardId] || [];
+        const updatedList = list.map((t) =>
+          t.id === payload.taskId
+            ? {
+                ...t,
+                assignedMembers: (t.assignedMembers || []).filter((m) => m !== payload.memberId),
+              }
+            : t,
+        );
+
+        return {
+          ...prev,
+          [payload.cardId]: updatedList,
+        };
       });
     },
   });
@@ -120,10 +204,7 @@ export function useBoard(boardId: string | undefined, profileId: string | undefi
 
     if (!destination) return;
 
-    if (
-      source.droppableId === destination.droppableId &&
-      source.index === destination.index
-    ) {
+    if (source.droppableId === destination.droppableId && source.index === destination.index) {
       return;
     }
 
@@ -131,10 +212,7 @@ export function useBoard(boardId: string | undefined, profileId: string | undefi
     const destCardId = destination.droppableId;
 
     const sourceTasks = Array.from(tasksMap[sourceCardId] || []);
-    const destTasks =
-      sourceCardId === destCardId
-        ? sourceTasks
-        : Array.from(tasksMap[destCardId] || []);
+    const destTasks = sourceCardId === destCardId ? sourceTasks : Array.from(tasksMap[destCardId] || []);
 
     const [movedTask] = sourceTasks.splice(source.index, 1);
 
@@ -160,10 +238,7 @@ export function useBoard(boardId: string | undefined, profileId: string | undefi
     }));
 
     try {
-      const updatedTasks =
-        sourceCardId === destCardId
-          ? destTasks
-          : [...destTasks, ...sourceTasks];
+      const updatedTasks = sourceCardId === destCardId ? destTasks : [...destTasks, ...sourceTasks];
 
       const payload = updatedTasks.map((t) => ({
         id: t.id,
