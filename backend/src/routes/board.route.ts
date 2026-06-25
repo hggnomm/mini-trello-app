@@ -18,5 +18,6 @@ router.put("/:id", boardController.updateBoardById);
 router.delete("/:id", boardController.deleteBoard);
 
 router.post("/:boardId/invite", boardController.inviteUserToBoard);
+router.get("/:boardId/repositories/:repositoryId/github-info", boardController.getBoardRepositoryInfo);
 
 export default router;

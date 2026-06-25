@@ -2,9 +2,11 @@ import { Request, Response } from "express";
 import { BoardService, IBoardService } from "../services/board.service";
 import { Board } from "../models/board.model";
 import { getAuthenticatedUser } from "../utils/auth";
+import { GitHubService } from "../services/github.service";
 
 export class BoardController {
   private boardService: IBoardService = new BoardService();
+  private githubService = new GitHubService();
 
   createBoard = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -151,6 +153,28 @@ export class BoardController {
       res.status(200).json(members);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
+    }
+  };
+
+  getBoardRepositoryInfo = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const { boardId, repositoryId } = req.params;
+
+      const user = getAuthenticatedUser(req);
+
+      const info = await this.githubService.getRepoInfo(
+        user.id,
+        boardId,
+        repositoryId,
+      );
+
+      res.status(200).json(info);
+    } catch (error: any) {
+      const status = error.message.includes("not found") ? 404 : 400;
+      res.status(status).json({ error: error.message });
     }
   };
 }
