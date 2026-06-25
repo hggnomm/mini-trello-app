@@ -4,7 +4,8 @@ import { logger } from "../../utils/logger";
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  secure: true,
+  // secure: true,
+  secure: false,
   host: settings.SMTP.HOST,
   port: settings.SMTP.PORT,
   auth: {
