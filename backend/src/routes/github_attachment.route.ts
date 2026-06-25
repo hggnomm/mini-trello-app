@@ -7,8 +7,8 @@ const controller = new GitHubAttachmentController();
 
 router.use(requireAuth);
 
-router.get("/:boardId/cards/:cardId/tasks/:taskId/github-attachments", controller.getAttachments);
-router.post("/:boardId/cards/:cardId/tasks/:taskId/github-attach", controller.attach);
-router.delete("/:boardId/cards/:cardId/tasks/:taskId/github-attachments/:attachmentId", controller.remove);
+router.get("/:taskId/github-attachments", controller.getAttachments);
+router.post("/:taskId/github-attach", controller.attach);
+router.delete("/:taskId/github-attachments/:attachmentId", controller.remove);
 
 export default router;

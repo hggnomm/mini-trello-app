@@ -26,7 +26,7 @@ export function createApp(): Express {
   app.use("/boards", boardRoutes);
   app.use("/boards", cardRoutes);
   app.use("/boards", taskRoutes);
-  app.use("/boards", githubAttachmentRoutes);
+  app.use("/tasks", githubAttachmentRoutes);
 
   app.get("/", (req: Request, res: Response) => {
     res.status(200).send("Hello, World!");

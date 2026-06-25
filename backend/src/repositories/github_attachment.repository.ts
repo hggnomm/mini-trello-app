@@ -7,13 +7,9 @@ export class GitHubAttachmentRepository extends BaseRepository {
   }
 
   async findByTask(
-    boardId: string,
-    cardId: string,
     taskId: string,
   ): Promise<GitHubAttachment[]> {
     const snapshot = await this.getCollection()
-      .where("boardId", "==", boardId)
-      .where("cardId", "==", cardId)
       .where("taskId", "==", taskId)
       .get();
 

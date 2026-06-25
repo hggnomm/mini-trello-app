@@ -163,7 +163,6 @@ export default function TaskDetailModal({
 
         setTask(mergedTask);
         onTaskUpdated?.(mergedTask);
-        toast.success("Member removed");
       } else {
         await assignMemberToTask(boardId, currentCardId, task.id, memberId);
 
@@ -172,7 +171,6 @@ export default function TaskDetailModal({
 
         setTask(mergedTask);
         onTaskUpdated?.(mergedTask);
-        toast.success("Member assigned");
       }
     } catch {
       toast.error(`Failed to ${isAssigned ? "remove" : "assign"} member`);
@@ -353,9 +351,9 @@ export default function TaskDetailModal({
               </div>
             </div>
 
-            <div className="w-[160px] flex-shrink-0 flex flex-col gap-5">
+            <div className="w-[220px] flex-shrink-0 flex flex-col gap-5">
               <div>
-                <p className="text-[10px] uppercase font-semibold text-gray-500 tracking-wide mb-1.5">Assign members</p>
+                <p className="text-xs uppercase font-semibold text-gray-500 tracking-wide mb-2">Members</p>
                 <div className="flex flex-col gap-1">
                   <BaseSelect
                     items={memberSelectItems}
@@ -367,7 +365,15 @@ export default function TaskDetailModal({
                 </div>
               </div>
 
-              {board && <GitHubPanel repo={board.githubRepository} onLinkRequest={() => setIsGithubPickerOpen(true)} />}
+              {board && task && (
+                <GitHubPanel
+                  repo={board.githubRepository}
+                  boardId={boardId}
+                  cardId={currentCardId}
+                  taskId={task.id}
+                  onLinkRequest={() => setIsGithubPickerOpen(true)}
+                />
+              )}
             </div>
           </div>
         </>
