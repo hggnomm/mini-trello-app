@@ -49,4 +49,11 @@ export class UserRepository extends BaseRepository {
 
     return users;
   }
+
+  async getGithubToken(userId: string): Promise<string | null> {
+    const doc = await this.getCollection().doc(userId).get();
+    if (!doc.exists) return null;
+    const data = doc.data() as User;
+    return data.githubAccessToken ?? null;
+  }
 }
