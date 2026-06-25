@@ -2,6 +2,9 @@
 
 A beautiful, modern, full-stack monorepo starter configuration for a **Mini Trello App** using **React (Vite)** on the frontend and **Node.js (Express & TypeScript)** on the backend.
 
+This project was developed by me, including the overall system architecture, application design, implementation, and code formatting conventions.
+AI tools were used **only as a supporting resource** for research, learning, brainstorming, and validating technical concepts during development. All core development decisions, source code structure, and implementation were created and reviewed by me.
+
 ## 🚀 Features
 
 - **React + TypeScript**: Clean type-safe interactive interface.
