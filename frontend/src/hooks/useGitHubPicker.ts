@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import type { GitHubAttachmentType, GitHubCommit, GitHubIssue, GitHubPullRequest } from "@/api/github";
-import { getRepoGitHubInfo } from "@/api/github";
+import { getRepoGitHubInfo, type GitHubCommit, type GitHubIssue, type GitHubPullRequest } from "@/api/github";
+import type { GitHubAttachmentType } from "@/api/githubAttachment";
 
 type RepoInfo = {
   pullRequests: GitHubPullRequest[];

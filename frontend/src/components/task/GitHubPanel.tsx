@@ -117,17 +117,18 @@ function Picker({ tab, setTab, getItems, loading, error, saving, onAttach, onClo
           !error &&
           items.map((item) => {
             const num = "number" in item ? item.number : null;
-            const title = item.title ?? item.message ?? "";
+            const title = "title" in item ? item.title : "message" in item ? item.message : "";
             const url = item.url ?? "";
             const label = num !== null ? `#${num} ${title}` : title;
 
             const handleAttach = () => {
-              onAttach(tab, num !== null ? { number: num, title, url } : { sha: item.sha, title, url });
+              const sha = "sha" in item ? item.sha : undefined;
+              onAttach(tab, num !== null ? { number: num, title, url } : { sha, title, url });
               onClose();
             };
 
             return (
-              <li key={num ?? item.sha}>
+              <li key={num ?? ("sha" in item ? item.sha : item.url)}>
                 <button
                   type="button"
                   disabled={saving}
@@ -147,7 +148,7 @@ function Picker({ tab, setTab, getItems, loading, error, saving, onAttach, onClo
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 
-export default function GitHubPanel({ repo, boardId, cardId, taskId, onLinkRequest }: Props) {
+export default function GitHubPanel({ repo, boardId, taskId, onLinkRequest }: Props) {
   const repoId = repo?.id?.toString() ?? null;
 
   const { attachments, loading, saving, attach, remove } = useGitHubAttachments({ taskId });
