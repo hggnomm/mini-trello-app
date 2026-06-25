@@ -73,6 +73,10 @@ export function useBoard(boardId: string | undefined, profileId: string | undefi
       }));
     },
 
+    [SOCKET_EVENTS.CARD_UPDATED]: (updatedCard: Card) => {
+      setCards((prev) => prev.map((card) => (card.id === updatedCard.id ? { ...card, ...updatedCard } : card)));
+    },
+
     [SOCKET_EVENTS.TASK_CREATED]: (newTask: Task) => {
       setTasksMap((prev) => {
         const list = prev[newTask.cardId] || [];

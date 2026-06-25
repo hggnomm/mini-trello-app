@@ -4,6 +4,9 @@ import { type Task } from "@/api/task";
 import type { Board } from "@/api/board";
 import AddTaskButton from "@/components/task/AddTaskButton";
 import TaskItem from "@/components/task/TaskItem";
+import BaseEditableTitle from "@/base/baseEditableTitle/BaseEditableTitle";
+import { updateCard } from "@/api/card";
+import { toast } from "react-toastify";
 import { cn } from "@/utils/cn";
 
 interface CardColumnProps {
@@ -17,11 +20,32 @@ interface CardColumnProps {
   onBoardUpdated?: (board: Board) => void;
 }
 
-export default function CardColumn({ boardId, card, tasks, board, currentUserId, onTaskAdded, onTaskUpdated, onBoardUpdated }: CardColumnProps) {
+export default function CardColumn({
+  boardId,
+  card,
+  tasks,
+  board,
+  currentUserId,
+  onTaskAdded,
+  onTaskUpdated,
+  onBoardUpdated,
+}: CardColumnProps) {
   return (
     <div className="flex w-[272px] min-w-[272px] max-h-[calc(100vh-140px)] flex-col rounded-md bg-[#0E0F05] p-2.5">
       <div className="mb-2 flex items-center justify-between border-b border-white/10 px-1 pb-2">
-        <span className="flex-1 break-words text-[0.8rem] font-semibold text-gray-200">{card.name}</span>
+        <BaseEditableTitle
+          value={card.name}
+          disabled={board?.ownerId !== currentUserId}
+          onSave={async (newTitle) => {
+            try {
+              await updateCard(boardId, card.id, { name: newTitle });
+            } catch {
+              toast.error("Failed to rename list");
+              return false;
+            }
+          }}
+          className="flex-1 break-words text-[0.8rem] font-semibold text-gray-200"
+        />
 
         <span className="ml-2 shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-gray-400">
           {tasks.length}

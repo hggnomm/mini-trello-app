@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HiOutlineMenuAlt2, HiChevronDown, HiCheck, HiOutlineDotsHorizontal } from "react-icons/hi";
+import { HiOutlineMenuAlt2, HiChevronDown, HiCheck, HiOutlineDotsHorizontal, HiX } from "react-icons/hi";
 import { MdOutlinePersonAddAlt } from "react-icons/md";
 import type { Task } from "@/api/task";
 import { getTaskById, updateTask, assignMemberToTask, removeMemberFromTask, deleteTask } from "@/api/task";
@@ -14,6 +14,8 @@ import AddDescription from "@/components/task/AddDescription";
 import TaskAssignedMembers from "../task/TaskAssignedMembers";
 import GitHubPanel from "../task/GitHubPanel";
 import GitHubRepoPickerModal from "./GitHubRepoPickerModal";
+import ConfirmDeleteModal from "./ConfirmDeleteModal";
+import BaseEditableTitle from "@/base/baseEditableTitle/BaseEditableTitle";
 
 type TaskDetailModalProps = {
   isOpen: boolean;
@@ -53,7 +55,6 @@ export default function TaskDetailModal({
   const [loadingTask, setLoadingTask] = useState(false);
 
   const [description, setDescription] = useState("");
-  const [title, setTitle] = useState("");
   const [isEditingDesc, setIsEditingDesc] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -64,19 +65,22 @@ export default function TaskDetailModal({
   const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
   const [deleting, setDeleting] = useState(false);
   const [isGithubPickerOpen, setIsGithubPickerOpen] = useState(false);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 
   const isBoardOwner = board?.ownerId === currentUserId;
 
-  const handleDeleteTask = async () => {
+  const handleDeleteTask = () => {
     if (!task) return;
+    setIsConfirmDeleteOpen(true);
+  };
 
-    const confirmed = window.confirm("Delete this task?");
-    if (!confirmed) return;
-
+  const confirmDeleteTask = async () => {
+    if (!task) return;
     try {
       setDeleting(true);
       await deleteTask(boardId, currentCardId, task.id);
       toast.success("Task deleted");
+      setIsConfirmDeleteOpen(false);
       onClose();
     } catch {
       toast.error("Failed to delete task");
@@ -103,7 +107,6 @@ export default function TaskDetailModal({
 
         setTask(taskData);
         setDescription(taskData.description ?? "");
-        setTitle(taskData.title ?? "");
         setBoardMembers(membersData);
       } catch {
         if (!cancelled) toast.error("Failed to load task details");
@@ -261,19 +264,29 @@ export default function TaskDetailModal({
           dropdownClassName="!bg-[#1e2329] !border-white/10 !shadow-2xl !min-w-[200px]"
           onOpen={handleCardPickerOpen}
         />
-        <BaseSelect
-          items={taskMenuItems}
-          trigger={
-            <button
-              type="button"
-              className="w-8 h-8 inline-flex items-center justify-center rounded-full bg-white/[0.07] border border-white/10 text-gray-300 hover:bg-white/[0.12] hover:text-white transition-colors"
-            >
-              <HiOutlineDotsHorizontal size={16} />
-            </button>
-          }
-          triggerClassName="!w-auto !h-auto !bg-transparent !p-0 !rounded-none"
-          dropdownClassName="!bg-[#1e2329] !border-white/10 !shadow-2xl !min-w-[200px]"
-        />
+
+        <div className="flex items-center gap-2">
+          <BaseSelect
+            items={taskMenuItems}
+            trigger={
+              <button
+                type="button"
+                className="w-8 h-8 inline-flex items-center justify-center rounded-full bg-white/[0.07] border border-white/10 text-gray-300 hover:bg-white/[0.12] hover:text-white transition-colors"
+              >
+                <HiOutlineDotsHorizontal size={16} />
+              </button>
+            }
+            triggerClassName="!w-auto !h-auto !bg-transparent !p-0 !rounded-none"
+            dropdownClassName="!bg-[#1e2329] !border-white/10 !shadow-2xl !min-w-[200px]"
+          />
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 inline-flex items-center justify-center rounded-full bg-white/[0.07] border border-white/10 text-gray-300 hover:bg-white/[0.12] hover:text-white transition-colors"
+          >
+            <HiX size={16} />
+          </button>
+        </div>
       </div>
 
       {loadingTask && (
@@ -285,31 +298,13 @@ export default function TaskDetailModal({
       {!loadingTask && task && (
         <>
           <div id="title-task" className="mb-2">
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onBlur={async () => {
-                if (!task) return;
-                const trimmedTitle = title.trim();
-                if (!trimmedTitle) {
-                  setTitle(task.title);
-                  return;
-                }
-                if (trimmedTitle === task.title) return;
-                const success = await handleSaveTask(
-                  { title: trimmedTitle },
-                  "Title updated",
-                  "Failed to update title",
-                );
-                if (!success) setTitle(task.title);
+            <BaseEditableTitle
+              value={task.title}
+              onSave={async (newTitle) => {
+                const success = await handleSaveTask({ title: newTitle }, "Title updated", "Failed to update title");
+                return success;
               }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.currentTarget.blur();
-                }
-              }}
-              className="w-full bg-transparent text-[40px] font-semibold text-white leading-snug px-2 py-1 rounded border border-transparent focus:border-white focus:outline-none transition-all"
+              className="w-full text-[40px] font-semibold text-white leading-snug px-2 py-1"
             />
           </div>
 
@@ -391,6 +386,15 @@ export default function TaskDetailModal({
           }}
         />
       )}
+
+      <ConfirmDeleteModal
+        isOpen={isConfirmDeleteOpen}
+        onClose={() => setIsConfirmDeleteOpen(false)}
+        onConfirm={confirmDeleteTask}
+        title="Delete Task"
+        message="Are you sure you want to delete this task? This action cannot be undone."
+        loading={deleting}
+      />
     </BaseModal>
   );
 }

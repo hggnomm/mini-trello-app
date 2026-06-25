@@ -8,7 +8,6 @@ import { getAuthenticatedUser } from "../utils/auth";
 import { getIo } from "../socket/socket";
 import { SOCKET_EVENTS } from "../constants/socket.constant";
 
-
 export class Cardcontroller {
   private cardService: ICardService = new CardService();
 
@@ -42,7 +41,7 @@ export class Cardcontroller {
     try {
       const { boardId } = req.params;
 
-      getAuthenticatedUser(req); 
+      getAuthenticatedUser(req);
 
       const cards = await this.cardService.getAllCards(boardId);
 
@@ -101,6 +100,17 @@ export class Cardcontroller {
         id,
         req.body,
       );
+
+      try {
+        const io = getIo();
+        io.to(`board:${boardId}`).emit(SOCKET_EVENTS.CARD_UPDATED, {
+          id: updatedCard.id,
+          name: updatedCard.name,
+          description: updatedCard.description,
+        });
+      } catch (err) {
+        console.error("Socket emit error:", err);
+      }
 
       res.status(200).json({
         id: updatedCard.id,

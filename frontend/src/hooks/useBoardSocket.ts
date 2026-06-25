@@ -6,6 +6,7 @@ import { socket } from "@/utils/socket";
 
 type BoardSocketEventHandlers = {
   [SOCKET_EVENTS.CARD_CREATED]?: (card: Card) => void;
+  [SOCKET_EVENTS.CARD_UPDATED]?: (card: Card) => void;
   [SOCKET_EVENTS.TASK_CREATED]?: (task: Task) => void;
   [SOCKET_EVENTS.TASK_UPDATED]?: (
     payload: { id: string; cardId: string; task?: Partial<Task> } | Record<string, never>,

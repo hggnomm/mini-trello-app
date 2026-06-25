@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { DragDropContext } from "@hello-pangea/dnd";
@@ -14,6 +14,10 @@ import InviteMemberModal from "@/components/modal/InviteMemberModal";
 import GitHubRepoPickerModal from "@/components/modal/GitHubRepoPickerModal";
 import BaseSpinner from "@/base/baseSpinner";
 import BaseButton from "@/base/baseButton";
+import BaseEditableTitle from "@/base/baseEditableTitle/BaseEditableTitle";
+
+import { updateBoard } from "@/api/board";
+import { toast } from "react-toastify";
 
 // ─── BoardView ────────────────────────────────────────────────────────────────
 
@@ -24,7 +28,10 @@ export default function BoardView() {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isGithubPickerOpen, setIsGithubPickerOpen] = useState(false);
 
-  const { board, cards, tasksMap, isLoading, handleDragEnd, handleTaskAdded, handleTaskUpdated, setBoard } = useBoard(boardId, profile?.id);
+  const { board, cards, tasksMap, isLoading, handleDragEnd, handleTaskAdded, handleTaskUpdated, setBoard } = useBoard(
+    boardId,
+    profile?.id,
+  );
 
   const isOwner = !!board && !!profile?.id && board.ownerId === profile.id;
 
@@ -42,7 +49,21 @@ export default function BoardView() {
     <div className="flex h-full flex-col">
       <div className="bg-[#743254] flex items-center justify-between px-4 py-3 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <h2 className="text-xl font-semibold text-gray-200 truncate">{board.name}</h2>
+          <BaseEditableTitle
+            value={board.name}
+            disabled={!isOwner}
+            onSave={async (newTitle) => {
+              if (!board || !isOwner) return false;
+              try {
+                const updated = await updateBoard(board.id, { name: newTitle });
+                setBoard(updated.updatedBoard);
+              } catch {
+                toast.error("Failed to rename board");
+                return false;
+              }
+            }}
+            className="text-xl font-semibold text-gray-200 truncate px-2 py-1"
+          />
           {board.githubRepository && (
             <a
               href={board.githubRepository.url}

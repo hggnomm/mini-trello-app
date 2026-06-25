@@ -129,43 +129,45 @@ export default function GitHubRepoPickerModal({
         </div>
       )}
 
-      <div className="min-h-[200px] max-h-[320px] overflow-y-auto rounded-lg border border-white/10">
-        {loading ? (
-          <div className="flex items-center justify-center py-10">
-            <BaseSpinner className="!size-7" />
-          </div>
-        ) : repos.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
-            <p className="text-sm text-gray-400">No repositories found.</p>
-            <BaseButton variant="primary" onClick={handleConnectGithub}>
-              Connect GitHub account
-            </BaseButton>
-          </div>
-        ) : (
-          <ul className="divide-y divide-white/5">
-            {repos.map((repo) => {
-              const isLinked = board.githubRepository?.id === repo.id;
-              return (
-                <li key={repo.id} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-white/[0.04]">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-gray-200 truncate">{repo.fullName}</p>
-                    <p className="text-xs text-gray-500 mt-0.5 truncate">{repo.htmlUrl}</p>
-                  </div>
-                  <BaseButton
-                    variant={isLinked ? "secondary" : "primary"}
-                    className="!text-xs"
-                    loading={linking === repo.id}
-                    disabled={isLinked || !isOwner}
-                    onClick={() => handleLink(repo)}
-                  >
-                    {isLinked ? "Linked" : isOwner ? "Link" : "View only"}
-                  </BaseButton>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
+      {!board?.githubRepository && (
+        <div className="min-h-[200px] max-h-[320px] overflow-y-auto rounded-lg border border-white/10">
+          {loading ? (
+            <div className="flex items-center justify-center py-10">
+              <BaseSpinner className="!size-7" />
+            </div>
+          ) : repos.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
+              <p className="text-sm text-gray-400">No repositories found.</p>
+              <BaseButton variant="primary" onClick={handleConnectGithub}>
+                Connect GitHub account
+              </BaseButton>
+            </div>
+          ) : (
+            <ul className="divide-y divide-white/5">
+              {repos.map((repo) => {
+                const isLinked = board.githubRepository?.id === repo.id;
+                return (
+                  <li key={repo.id} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-white/[0.04]">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-200 truncate">{repo.fullName}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 truncate">{repo.htmlUrl}</p>
+                    </div>
+                    <BaseButton
+                      variant={isLinked ? "secondary" : "primary"}
+                      className="!text-xs"
+                      loading={linking === repo.id}
+                      disabled={isLinked || !isOwner}
+                      onClick={() => handleLink(repo)}
+                    >
+                      {isLinked ? "Linked" : isOwner ? "Link" : "View only"}
+                    </BaseButton>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
 
       {isOwner && (
         <p className="mt-3 text-[11px] text-gray-500">Only the board owner can link or change the repository.</p>
