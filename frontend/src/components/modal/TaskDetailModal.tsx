@@ -75,11 +75,13 @@ export default function TaskDetailModal({
 
   useEffect(() => {
     if (isOpen) return;
+
     const timer = setTimeout(() => {
       setTask(null);
       setIsEditingDesc(false);
       setCards([]);
     }, 200);
+
     return () => clearTimeout(timer);
   }, [isOpen]);
 

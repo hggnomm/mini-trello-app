@@ -111,7 +111,7 @@ const BaseSelect = ({
               transition={{ duration: 0.12, ease: "easeOut" }}
               style={{ top: coords.top, left: coords.left }}
               className={cn(
-                "fixed z-[9999] min-w-[140px] bg-white rounded shadow-lg border border-gray-200 py-1 flex flex-col",
+                "fixed z-[9999] min-w-[140px] bg-white rounded shadow-lg border border-gray-200 flex flex-col",
                 dropdownClassName,
               )}
             >
@@ -123,8 +123,8 @@ const BaseSelect = ({
                     close();
                   }}
                   className={cn(
-                    "flex items-center gap-2 px-3 py-2 text-sm text-left text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer w-full",
-                    item.id === selectedId && "font-medium text-blue-600 bg-blue-50",
+                    "flex items-center gap-2 px-3 py-2 text-sm text-left text-gray-700 hover:bg-gray-500 hover:text-white transition-colors cursor-pointer w-full",
+                    item.id === selectedId && "font-medium text-white bg-gray-700",
                   )}
                 >
                   {item.icon && (
