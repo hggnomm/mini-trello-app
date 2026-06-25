@@ -149,7 +149,7 @@ export class AuthService implements IAuthService {
   getGithubSignInUrl(state?: string): string {
     const clientId = settings.GITHUB_OAUTH.CLIENT_ID;
     const redirectUri = settings.GITHUB_OAUTH.CALLBACK_URL;
-    const scope = "read:user user:email";
+    const scope = "read:user user:email repo";
 
     let url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
       redirectUri,
