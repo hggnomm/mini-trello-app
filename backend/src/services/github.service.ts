@@ -104,15 +104,29 @@ export class GitHubService implements IGitHubService {
     boardId: string,
     repositoryId: string,
   ): Promise<GitHubRepoInfo> {
-    const repoMeta = await this.getRepoFromBoard(boardId, repositoryId);
+    const board = await this.boardRepository.findById(boardId);
 
-    if (!repoMeta) {
-      throw new Error("Repository not found in any board");
+    if (!board) {
+      throw new Error("Board not found");
+    }
+
+    const isOwner = board.ownerId === userId;
+
+    const isMember = board.listMembers?.[userId] === "accepted";
+
+    if (!isOwner && !isMember) {
+      throw new Error("User is a member of this board");
+    }
+
+    const repoMeta = board.githubRepository;
+
+    if (!repoMeta || repoMeta.id.toString() !== repositoryId) {
+      throw new Error("Repository not found in this board");
     }
 
     const [owner, repoName] = repoMeta.fullName.split("/");
 
-    const octokit = await this.getOctokitForUser(userId);
+    const octokit = await this.getOctokitForUser(board.ownerId);
 
     const [
       branchesResponse,
