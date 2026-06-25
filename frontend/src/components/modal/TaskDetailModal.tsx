@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { HiOutlineMenuAlt2, HiChevronDown, HiCheck } from "react-icons/hi";
-import CloseButton from "@/base/baseButton/CloseButton";
+import { HiOutlineMenuAlt2, HiChevronDown, HiCheck, HiOutlineDotsHorizontal } from "react-icons/hi";
 import { MdOutlinePersonAddAlt } from "react-icons/md";
 import type { Task } from "@/api/task";
-import { getTaskById, updateTask, assignMemberToTask, removeMemberFromTask } from "@/api/task";
+import { getTaskById, updateTask, assignMemberToTask, removeMemberFromTask, deleteTask } from "@/api/task";
 import { getBoardMembers, type BoardMember } from "@/api/board";
 import { getCards, type Card } from "@/api/card";
 import BaseModal from "@/base/baseModal";
@@ -55,6 +54,25 @@ export default function TaskDetailModal({
   const [cards, setCards] = useState<Card[]>([]);
   const [movingCard, setMovingCard] = useState(false);
   const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteTask = async () => {
+    if (!task) return;
+
+    const confirmed = window.confirm("Delete this task?");
+    if (!confirmed) return;
+
+    try {
+      setDeleting(true);
+      await deleteTask(boardId, currentCardId, task.id);
+      toast.success("Task deleted");
+      onClose();
+    } catch {
+      toast.error("Failed to delete task");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   useEffect(() => {
     if (!isOpen || !taskProp || !boardId || !cardId) return;
@@ -128,15 +146,19 @@ export default function TaskDetailModal({
     try {
       if (isAssigned) {
         await removeMemberFromTask(boardId, currentCardId, task.id, memberId);
+
         const newMembers = task.assignedMembers.filter((m) => m !== memberId);
         const mergedTask = { ...task, assignedMembers: newMembers };
+
         setTask(mergedTask);
         onTaskUpdated?.(mergedTask);
         toast.success("Member removed");
       } else {
         await assignMemberToTask(boardId, currentCardId, task.id, memberId);
+
         const newMembers = [...(task.assignedMembers || []), memberId];
         const mergedTask = { ...task, assignedMembers: newMembers };
+
         setTask(mergedTask);
         onTaskUpdated?.(mergedTask);
         toast.success("Member assigned");
@@ -200,6 +222,14 @@ export default function TaskDetailModal({
     };
   });
 
+  const taskMenuItems: SelectItem[] = [
+    {
+      id: "delete",
+      label: deleting ? "Deleting..." : "Delete task",
+      onClick: handleDeleteTask,
+    },
+  ];
+
   return (
     <BaseModal isOpen={isOpen} onClose={onClose} className="!max-w-[800px]" overlayClassName="!items-start !pt-[4rem]">
       <div className="flex items-center justify-between mb-4">
@@ -222,7 +252,19 @@ export default function TaskDetailModal({
           dropdownClassName="!bg-[#1e2329] !border-white/10 !shadow-2xl !min-w-[200px]"
           onOpen={handleCardPickerOpen}
         />
-        <CloseButton onClick={onClose} className="!relative !top-auto !right-auto" />
+        <BaseSelect
+          items={taskMenuItems}
+          trigger={
+            <button
+              type="button"
+              className="w-8 h-8 inline-flex items-center justify-center rounded-full bg-white/[0.07] border border-white/10 text-gray-300 hover:bg-white/[0.12] hover:text-white transition-colors"
+            >
+              <HiOutlineDotsHorizontal size={16} />
+            </button>
+          }
+          triggerClassName="!w-auto !h-auto !bg-transparent !p-0 !rounded-none"
+          dropdownClassName="!bg-[#1e2329] !border-white/10 !shadow-2xl !min-w-[200px]"
+        />
       </div>
 
       {loadingTask && (
@@ -302,7 +344,7 @@ export default function TaskDetailModal({
 
             <div className="w-[160px] flex-shrink-0 flex flex-col gap-3">
               <div>
-                <p className="text-[10px] uppercase font-semibold text-gray-500 tracking-wide mb-1.5">Add to card</p>
+                <p className="text-[10px] uppercase font-semibold text-gray-500 tracking-wide mb-1.5">Assign members</p>
                 <div className="flex flex-col gap-1">
                   <BaseSelect
                     items={memberSelectItems}

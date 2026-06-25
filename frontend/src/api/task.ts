@@ -13,6 +13,7 @@ export interface Task {
   githubAttachments?: string[];
   createdAt?: string;
   updatedAt?: string;
+  newCardId?: string;
 }
 
 export const getTasks = async (boardId: string, cardId: string): Promise<Task[]> => {
@@ -39,11 +40,18 @@ export const createTask = async (
   return response.data;
 };
 
+export type UpdateTaskBody = {
+  title?: string;
+  description?: string;
+  status?: string;
+  newCardId?: string;
+};
+
 export const updateTask = async (
   boardId: string,
   cardId: string,
   taskId: string,
-  data: { title?: string; description?: string; status?: string; newCardId?: string },
+  data: UpdateTaskBody,
 ): Promise<Task> => {
   const response = await axiosInstance.put<Task>(`/boards/${boardId}/cards/${cardId}/tasks/${taskId}`, data);
   return response.data;

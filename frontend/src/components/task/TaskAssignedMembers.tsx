@@ -1,4 +1,5 @@
 import { MdOutlinePersonAddAlt } from "react-icons/md";
+import { HiOutlineX } from "react-icons/hi";
 import BaseSelect, { type SelectItem } from "@/base/baseSelect/BaseSelect";
 import { formatDate } from "@/utils/date";
 import type { Task } from "@/api/task";
@@ -27,14 +28,24 @@ export default function TaskAssignedMembers({
           {task.assignedMembers?.map((memberId: string) => {
             const member = boardMembers.find((m) => m.id === memberId);
             const displayName = member?.name ?? memberId;
+
             return (
               <div
                 key={memberId}
                 title={displayName}
-                className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold cursor-pointer hover:ring-2 hover:ring-white/30 transition-all"
-                onClick={() => onToggleMember(memberId)}
+                className="relative w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold group hover:ring-2 hover:ring-white/30 transition-all"
               >
-                {displayName.slice(0, 2).toUpperCase()}
+                <span>{displayName.slice(0, 2).toUpperCase()}</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleMember(memberId);
+                  }}
+                  className="absolute -top-1 -right-1 hidden group-hover:flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[10px] leading-none cursor-pointer"
+                >
+                  <HiOutlineX size={10} />
+                </button>
               </div>
             );
           })}
