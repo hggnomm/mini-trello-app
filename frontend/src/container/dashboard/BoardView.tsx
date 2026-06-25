@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { DragDropContext } from "@hello-pangea/dnd";
 import { FiUsers } from "react-icons/fi";
 import { SiGithub } from "react-icons/si";
+import { HiOutlineDotsHorizontal } from "react-icons/hi";
 
 import type { RootState } from "@/store";
 import { useBoard } from "@/hooks/useBoard";
@@ -14,19 +15,24 @@ import InviteMemberModal from "@/components/modal/InviteMemberModal";
 import GitHubRepoPickerModal from "@/components/modal/GitHubRepoPickerModal";
 import BaseSpinner from "@/base/baseSpinner";
 import BaseButton from "@/base/baseButton";
+import BaseSelect from "@/base/baseSelect/BaseSelect";
 import BaseEditableTitle from "@/base/baseEditableTitle/BaseEditableTitle";
+import ConfirmDeleteModal from "@/components/modal/ConfirmDeleteModal";
 
-import { updateBoard } from "@/api/board";
+import { updateBoard, deleteBoard } from "@/api/board";
 import { toast } from "react-toastify";
 
 // ─── BoardView ────────────────────────────────────────────────────────────────
 
 export default function BoardView() {
   const { boardId } = useParams<{ boardId: string }>();
+  const navigate = useNavigate();
   const profile = useSelector((state: RootState) => state.user.profile);
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isGithubPickerOpen, setIsGithubPickerOpen] = useState(false);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const { board, cards, tasksMap, isLoading, handleDragEnd, handleTaskAdded, handleTaskUpdated, setBoard } = useBoard(
     boardId,
@@ -34,6 +40,29 @@ export default function BoardView() {
   );
 
   const isOwner = !!board && !!profile?.id && board.ownerId === profile.id;
+
+  const handleDeleteBoard = async () => {
+    if (!board) return;
+    try {
+      setDeleting(true);
+      await deleteBoard(board.id);
+      toast.success("Board deleted successfully");
+      setIsConfirmDeleteOpen(false);
+      navigate("/");
+    } catch {
+      toast.error("Failed to delete board");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const boardMenuItems = [
+    {
+      id: "delete",
+      label: deleting ? "Deleting..." : "Delete board",
+      onClick: () => setIsConfirmDeleteOpen(true),
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -93,6 +122,22 @@ export default function BoardView() {
               <p>Invite Member</p>
             </div>
           </BaseButton>
+          {isOwner && (
+            <BaseSelect
+              items={boardMenuItems}
+              align="right"
+              trigger={
+                <button
+                  type="button"
+                  className="w-8 h-8 inline-flex items-center justify-center rounded-full bg-white/[0.07] border border-white/10 text-gray-300 hover:bg-white/[0.12] hover:text-white transition-colors"
+                >
+                  <HiOutlineDotsHorizontal size={16} />
+                </button>
+              }
+              triggerClassName="!w-auto !h-auto !bg-transparent !p-0 !rounded-none"
+              dropdownClassName="!bg-[#1e2329] !border-white/10 !shadow-2xl !min-w-[200px]"
+            />
+          )}
         </div>
       </div>
 
@@ -129,6 +174,14 @@ export default function BoardView() {
           onLinked={(repo) => setBoard({ ...board, githubRepository: repo ?? undefined })}
         />
       )}
+      <ConfirmDeleteModal
+        isOpen={isConfirmDeleteOpen}
+        onClose={() => setIsConfirmDeleteOpen(false)}
+        onConfirm={handleDeleteBoard}
+        title="Delete Board"
+        message="Are you sure you want to delete this board? All lists and tasks will be permanently removed. This action cannot be undone."
+        loading={deleting}
+      />
     </div>
   );
 }

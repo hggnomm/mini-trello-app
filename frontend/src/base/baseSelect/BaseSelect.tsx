@@ -18,6 +18,7 @@ type BaseSelectProps = {
   dropdownClassName?: string;
   triggerClassName?: string;
   onOpen?: () => void;
+  align?: "left" | "right";
 };
 
 const BaseSelect = ({
@@ -28,19 +29,27 @@ const BaseSelect = ({
   dropdownClassName,
   triggerClassName,
   onOpen,
+  align = "left",
 }: BaseSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [coords, setCoords] = useState({ top: 0, left: 0 });
+  const [coords, setCoords] = useState({ top: 0, left: 0, right: 0 });
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const toggle = () => {
-    if (!isOpen && triggerRef.current) {
+  const updateCoords = () => {
+    if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       setCoords({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
+        top: rect.bottom + 4,
+        left: rect.left,
+        right: window.innerWidth - rect.right,
       });
+    }
+  };
+
+  const toggle = () => {
+    if (!isOpen && triggerRef.current) {
+      updateCoords();
       onOpen?.();
     }
     setIsOpen((prev) => !prev);
@@ -50,20 +59,12 @@ const BaseSelect = ({
 
   useLayoutEffect(() => {
     if (!isOpen) return;
-    const update = () => {
-      if (triggerRef.current) {
-        const rect = triggerRef.current.getBoundingClientRect();
-        setCoords({
-          top: rect.bottom + window.scrollY + 4,
-          left: rect.left + window.scrollX,
-        });
-      }
-    };
-    window.addEventListener("scroll", update, true);
-    window.addEventListener("resize", update);
+    updateCoords();
+    window.addEventListener("scroll", updateCoords, true);
+    window.addEventListener("resize", updateCoords);
     return () => {
-      window.removeEventListener("scroll", update, true);
-      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", updateCoords, true);
+      window.removeEventListener("resize", updateCoords);
     };
   }, [isOpen]);
 
@@ -109,7 +110,10 @@ const BaseSelect = ({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -4, scale: 0.97 }}
               transition={{ duration: 0.12, ease: "easeOut" }}
-              style={{ top: coords.top, left: coords.left }}
+              style={{
+                top: coords.top,
+                ...(align === "right" ? { right: coords.right } : { left: coords.left }),
+              }}
               className={cn(
                 "fixed z-[9999] min-w-[140px] bg-white rounded shadow-lg border border-gray-200 flex flex-col",
                 dropdownClassName,
