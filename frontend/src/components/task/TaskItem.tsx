@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Draggable } from "@hello-pangea/dnd";
 import type { Task } from "@/api/task";
+import type { Board } from "@/api/board";
 import { cn } from "@/utils/cn";
 import TaskDetailModal from "@/components/modal/TaskDetailModal";
 
@@ -10,10 +11,13 @@ interface TaskItemProps {
   boardId: string;
   cardId: string;
   cardName?: string;
+  board?: Board;
+  currentUserId?: string;
   onTaskUpdated?: (updated: Task) => void;
+  onBoardUpdated?: (board: Board) => void;
 }
 
-export default function TaskItem({ task, index, boardId, cardId, cardName, onTaskUpdated }: TaskItemProps) {
+export default function TaskItem({ task, index, boardId, cardId, cardName, board, currentUserId, onTaskUpdated, onBoardUpdated }: TaskItemProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   return (
@@ -50,9 +54,12 @@ export default function TaskItem({ task, index, boardId, cardId, cardName, onTas
         cardName={cardName}
         boardId={boardId}
         cardId={cardId}
+        board={board}
+        currentUserId={currentUserId}
         onTaskUpdated={(updated) => {
           onTaskUpdated?.(updated);
         }}
+        onBoardUpdated={onBoardUpdated}
       />
     </>
   );

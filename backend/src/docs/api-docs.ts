@@ -51,7 +51,14 @@ const options = {
             name: { type: "string", example: "Board Name" },
             description: { type: "string", example: "Board Description" },
             ownerId: { type: "string", example: "user_id" },
-            githubRepositoryId: { type: "string", example: "github_repository_id" },
+            githubRepository: {
+              type: "object",
+              properties: {
+                id: { type: "string", example: "github_repository_id" },
+                fullName: { type: "string", example: "owner/repo" },
+                url: { type: "string", example: "https://github.com/owner/repo" },
+              },
+            },
             listMembers: {
               type: "object",
               additionalProperties: {

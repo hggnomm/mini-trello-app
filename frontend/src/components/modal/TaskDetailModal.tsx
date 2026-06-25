@@ -3,7 +3,7 @@ import { HiOutlineMenuAlt2, HiChevronDown, HiCheck, HiOutlineDotsHorizontal } fr
 import { MdOutlinePersonAddAlt } from "react-icons/md";
 import type { Task } from "@/api/task";
 import { getTaskById, updateTask, assignMemberToTask, removeMemberFromTask, deleteTask } from "@/api/task";
-import { getBoardMembers, type BoardMember } from "@/api/board";
+import { getBoardMembers, type BoardMember, type Board } from "@/api/board";
 import { getCards, type Card } from "@/api/card";
 import BaseModal from "@/base/baseModal";
 import BaseSpinner from "@/base/baseSpinner";
@@ -12,6 +12,8 @@ import { toast } from "react-toastify";
 import { cn } from "@/utils/cn";
 import AddDescription from "@/components/task/AddDescription";
 import TaskAssignedMembers from "../task/TaskAssignedMembers";
+import GitHubPanel from "../task/GitHubPanel";
+import GitHubRepoPickerModal from "./GitHubRepoPickerModal";
 
 type TaskDetailModalProps = {
   isOpen: boolean;
@@ -20,7 +22,10 @@ type TaskDetailModalProps = {
   cardName?: string;
   boardId: string;
   cardId: string;
+  board?: Board;
+  currentUserId?: string;
   onTaskUpdated?: (updated: Task) => void;
+  onBoardUpdated?: (board: Board) => void;
 };
 
 function SidebarButton({ icon, label }: { icon: React.ReactNode; label: string }) {
@@ -39,7 +44,10 @@ export default function TaskDetailModal({
   cardName,
   boardId,
   cardId,
+  board,
+  currentUserId,
   onTaskUpdated,
+  onBoardUpdated,
 }: TaskDetailModalProps) {
   const [task, setTask] = useState<Task | null>(null);
   const [loadingTask, setLoadingTask] = useState(false);
@@ -55,6 +63,9 @@ export default function TaskDetailModal({
   const [movingCard, setMovingCard] = useState(false);
   const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
   const [deleting, setDeleting] = useState(false);
+  const [isGithubPickerOpen, setIsGithubPickerOpen] = useState(false);
+
+  const isBoardOwner = board?.ownerId === currentUserId;
 
   const handleDeleteTask = async () => {
     if (!task) return;
@@ -342,7 +353,7 @@ export default function TaskDetailModal({
               </div>
             </div>
 
-            <div className="w-[160px] flex-shrink-0 flex flex-col gap-3">
+            <div className="w-[160px] flex-shrink-0 flex flex-col gap-5">
               <div>
                 <p className="text-[10px] uppercase font-semibold text-gray-500 tracking-wide mb-1.5">Assign members</p>
                 <div className="flex flex-col gap-1">
@@ -355,9 +366,24 @@ export default function TaskDetailModal({
                   />
                 </div>
               </div>
+
+              {board && <GitHubPanel repo={board.githubRepository} onLinkRequest={() => setIsGithubPickerOpen(true)} />}
             </div>
           </div>
         </>
+      )}
+
+      {board && (
+        <GitHubRepoPickerModal
+          isOpen={isGithubPickerOpen}
+          onClose={() => setIsGithubPickerOpen(false)}
+          board={board}
+          isOwner={isBoardOwner}
+          onLinked={(repo) => {
+            const next: Board = { ...board, githubRepository: repo ?? undefined };
+            onBoardUpdated?.(next);
+          }}
+        />
       )}
     </BaseModal>
   );

@@ -1,11 +1,17 @@
 import axiosInstance from "../utils/axios";
 
+export interface GitHubRepository {
+  id: string | number;
+  fullName: string;
+  url: string;
+}
+
 export interface Board {
   id: string;
   name: string;
   description?: string;
   ownerId: string;
-  githubRepositoryId?: string;
+  githubRepository?: GitHubRepository;
   listMembers?: Record<string, "accepted" | "pending" | "declined">;
   createdAt?: string;
   updatedAt?: string;
@@ -57,7 +63,11 @@ export const acceptBoardInvitation = async (
 
 export const updateBoard = async (
   id: string,
-  data: { name?: string; description?: string },
+  data: {
+    name?: string;
+    description?: string;
+    githubRepository?: GitHubRepository | null;
+  },
 ): Promise<{ updatedBoard: Board; message: string }> => {
   const response = await axiosInstance.put<{ updatedBoard: Board; message: string }>(`/boards/${id}`, data);
   return response.data;

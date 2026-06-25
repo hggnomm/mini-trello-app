@@ -281,6 +281,7 @@ export function useBoard(boardId: string | undefined, profileId: string | undefi
 
   return {
     board,
+    setBoard,
     cards,
     tasksMap,
     isLoading,

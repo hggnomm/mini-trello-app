@@ -49,10 +49,18 @@ export class BoardController {
   updateBoardById = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
+      const authenticatedUser = getAuthenticatedUser(req);
 
       const board = await this.boardService.getBoardById(id);
       if (!board) {
         res.status(404).json({ error: "Board not found" });
+        return;
+      }
+
+      if (authenticatedUser.id !== board.ownerId) {
+        res.status(403).json({
+          error: "Unauthorized: Only the board owner can update this board",
+        });
         return;
       }
 

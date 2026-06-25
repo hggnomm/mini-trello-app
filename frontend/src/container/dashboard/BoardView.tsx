@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { DragDropContext } from "@hello-pangea/dnd";
 import { FiUsers } from "react-icons/fi";
+import { SiGithub } from "react-icons/si";
 
 import type { RootState } from "@/store";
 import { useBoard } from "@/hooks/useBoard";
@@ -10,6 +11,7 @@ import { useBoard } from "@/hooks/useBoard";
 import AddCardButton from "@/components/card/AddCardButton";
 import CardColumn from "@/components/card/CardColumn";
 import InviteMemberModal from "@/components/modal/InviteMemberModal";
+import GitHubRepoPickerModal from "@/components/modal/GitHubRepoPickerModal";
 import BaseSpinner from "@/base/baseSpinner";
 import BaseButton from "@/base/baseButton";
 
@@ -20,8 +22,11 @@ export default function BoardView() {
   const profile = useSelector((state: RootState) => state.user.profile);
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isGithubPickerOpen, setIsGithubPickerOpen] = useState(false);
 
-  const { board, cards, tasksMap, isLoading, handleDragEnd, handleTaskAdded, handleTaskUpdated } = useBoard(boardId, profile?.id);
+  const { board, cards, tasksMap, isLoading, handleDragEnd, handleTaskAdded, handleTaskUpdated, setBoard } = useBoard(boardId, profile?.id);
+
+  const isOwner = !!board && !!profile?.id && board.ownerId === profile.id;
 
   if (isLoading) {
     return (
@@ -36,15 +41,40 @@ export default function BoardView() {
   return (
     <div className="flex h-full flex-col">
       <div className="bg-[#743254] flex items-center justify-between px-4 py-3 shrink-0">
-        <h2 className="text-xl font-semibold text-gray-200">{board.name}</h2>
-        <BaseButton variant="outline" onClick={() => setIsInviteModalOpen(true)}>
-          <div className="flex items-center gap-2">
-            <FiUsers size={16} />
-            <p>Invite Member</p>
-          </div>
-        </BaseButton>
+        <div className="flex items-center gap-3 min-w-0">
+          <h2 className="text-xl font-semibold text-gray-200 truncate">{board.name}</h2>
+          {board.githubRepository && (
+            <a
+              href={board.githubRepository.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={board.githubRepository.fullName}
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-0.5 text-xs text-gray-200 hover:bg-white/20 transition-colors"
+            >
+              <SiGithub size={12} />
+              <span className="max-w-[180px] truncate">{board.githubRepository.fullName}</span>
+            </a>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {isOwner && (
+            <BaseButton variant="outline" onClick={() => setIsGithubPickerOpen(true)}>
+              <div className="flex items-center gap-2">
+                <SiGithub size={16} />
+                <p>{board.githubRepository ? "Change repository" : "Link GitHub repo"}</p>
+              </div>
+            </BaseButton>
+          )}
+          <BaseButton variant="outline" onClick={() => setIsInviteModalOpen(true)}>
+            <div className="flex items-center gap-2">
+              <FiUsers size={16} />
+              <p>Invite Member</p>
+            </div>
+          </BaseButton>
+        </div>
       </div>
-      
+
       {/* https://medium.com/codex/how-to-implement-a-simple-drag-and-drop-using-create-react-app-and-react-beautiful-dnd-4e6e57a2299f */}
 
       <DragDropContext onDragEnd={handleDragEnd}>
@@ -55,8 +85,11 @@ export default function BoardView() {
               boardId={board.id}
               card={card}
               tasks={tasksMap[card.id] || []}
+              board={board}
+              currentUserId={profile?.id}
               onTaskAdded={handleTaskAdded}
               onTaskUpdated={handleTaskUpdated}
+              onBoardUpdated={(updated) => setBoard(updated)}
             />
           ))}
 
@@ -65,6 +98,15 @@ export default function BoardView() {
       </DragDropContext>
       {isInviteModalOpen && (
         <InviteMemberModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} board={board} />
+      )}
+      {isGithubPickerOpen && (
+        <GitHubRepoPickerModal
+          isOpen={isGithubPickerOpen}
+          onClose={() => setIsGithubPickerOpen(false)}
+          board={board}
+          isOwner={isOwner}
+          onLinked={(repo) => setBoard({ ...board, githubRepository: repo ?? undefined })}
+        />
       )}
     </div>
   );
