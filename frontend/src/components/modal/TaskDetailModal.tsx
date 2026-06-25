@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { HiOutlineMenuAlt2, HiChevronDown } from "react-icons/hi";
+import { HiOutlineMenuAlt2, HiChevronDown, HiCheck } from "react-icons/hi";
 import CloseButton from "@/base/baseButton/CloseButton";
 import { MdOutlinePersonAddAlt } from "react-icons/md";
 import type { Task } from "@/api/task";
-import { getTaskById, updateTask } from "@/api/task";
+import { getTaskById, updateTask, assignMemberToTask, removeMemberFromTask } from "@/api/task";
+import { getBoardMembers, type BoardMember } from "@/api/board";
 import { getCards, type Card } from "@/api/card";
 import BaseModal from "@/base/baseModal";
 import BaseSpinner from "@/base/baseSpinner";
@@ -11,7 +12,7 @@ import BaseSelect, { type SelectItem } from "@/base/baseSelect/BaseSelect";
 import { toast } from "react-toastify";
 import { cn } from "@/utils/cn";
 import AddDescription from "@/components/task/AddDescription";
-import { formatDate } from "@/utils/date";
+import TaskAssignedMembers from "../task/TaskAssignedMembers";
 
 type TaskDetailModalProps = {
   isOpen: boolean;
@@ -22,6 +23,15 @@ type TaskDetailModalProps = {
   cardId: string;
   onTaskUpdated?: (updated: Task) => void;
 };
+
+function SidebarButton({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div className="w-full flex items-center gap-2 px-3 py-1.5 rounded text-xs text-gray-300 bg-white/[0.06] hover:bg-white/[0.12] transition-colors text-left font-medium cursor-pointer">
+      <span className="text-gray-400">{icon}</span>
+      {label}
+    </div>
+  );
+}
 
 export default function TaskDetailModal({
   isOpen,
@@ -44,6 +54,7 @@ export default function TaskDetailModal({
   const [currentCardName, setCurrentCardName] = useState(cardName ?? "");
   const [cards, setCards] = useState<Card[]>([]);
   const [movingCard, setMovingCard] = useState(false);
+  const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
 
   useEffect(() => {
     if (!isOpen || !taskProp || !boardId || !cardId) return;
@@ -54,13 +65,17 @@ export default function TaskDetailModal({
 
     const fetchTask = async () => {
       try {
-        const data = await getTaskById(boardId, cardId, taskProp.id);
+        const [taskData, membersData] = await Promise.all([
+          getTaskById(boardId, cardId, taskProp.id),
+          getBoardMembers(boardId),
+        ]);
 
         if (cancelled) return;
 
-        setTask(data);
-        setDescription(data.description ?? "");
-        setTitle(data.title ?? "");
+        setTask(taskData);
+        setDescription(taskData.description ?? "");
+        setTitle(taskData.title ?? "");
+        setBoardMembers(membersData);
       } catch {
         if (!cancelled) toast.error("Failed to load task details");
       } finally {
@@ -96,7 +111,40 @@ export default function TaskDetailModal({
     }
   };
 
-  // ─── Handlers ────────────────────────────────────────────────────────────────
+  const handleMemberPickerOpen = async () => {
+    if (boardMembers.length > 0) return;
+    try {
+      const data = await getBoardMembers(boardId);
+      setBoardMembers(data);
+    } catch {
+      toast.error("Failed to load board members");
+    }
+  };
+
+  const handleToggleMember = async (memberId: string) => {
+    if (!task) return;
+    const isAssigned = task.assignedMembers?.includes(memberId);
+
+    try {
+      if (isAssigned) {
+        await removeMemberFromTask(boardId, currentCardId, task.id, memberId);
+        const newMembers = task.assignedMembers.filter((m) => m !== memberId);
+        const mergedTask = { ...task, assignedMembers: newMembers };
+        setTask(mergedTask);
+        onTaskUpdated?.(mergedTask);
+        toast.success("Member removed");
+      } else {
+        await assignMemberToTask(boardId, currentCardId, task.id, memberId);
+        const newMembers = [...(task.assignedMembers || []), memberId];
+        const mergedTask = { ...task, assignedMembers: newMembers };
+        setTask(mergedTask);
+        onTaskUpdated?.(mergedTask);
+        toast.success("Member assigned");
+      }
+    } catch {
+      toast.error(`Failed to ${isAssigned ? "remove" : "assign"} member`);
+    }
+  };
 
   const handleSaveTask = async (updates: Partial<Task>, successMsg: string, errorMsg: string) => {
     if (!task) return false;
@@ -142,7 +190,15 @@ export default function TaskDetailModal({
     onClick: () => handleMoveToCard(card),
   }));
 
-  // ─── Render ──────────────────────────────────────────────────────────────────
+  const memberSelectItems: SelectItem[] = boardMembers.map((m) => {
+    const isAssigned = task?.assignedMembers?.includes(m.id);
+    return {
+      id: m.id,
+      label: m.name,
+      icon: isAssigned ? <HiCheck /> : undefined,
+      onClick: () => handleToggleMember(m.id),
+    };
+  });
 
   return (
     <BaseModal isOpen={isOpen} onClose={onClose} className="!max-w-[800px]" overlayClassName="!items-start !pt-[4rem]">
@@ -207,40 +263,15 @@ export default function TaskDetailModal({
           </div>
 
           <div className="flex gap-5">
-            {/* Main content */}
             <div className="flex-1 min-w-0 flex flex-col gap-6">
-              {/* Members row */}
-              <div className="flex flex-wrap gap-4 text-xs text-gray-400">
-                <div>
-                  <p className="font-semibold text-gray-500 mb-1.5 uppercase tracking-wide text-[10px]">Members</p>
-                  <div className="flex items-center gap-2">
-                    {task.assignedMembers?.map((memberId) => (
-                      <div
-                        key={memberId}
-                        title={memberId}
-                        className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold cursor-pointer hover:ring-2 hover:ring-white/30 transition-all"
-                      >
-                        {memberId.slice(0, 2).toUpperCase()}
-                      </div>
-                    ))}
-                    <button
-                      className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-400 hover:bg-white/20 hover:text-white transition-all"
-                      title="Add member"
-                    >
-                      <MdOutlinePersonAddAlt size={15} />
-                    </button>
-                  </div>
-                </div>
+              <TaskAssignedMembers
+                task={task}
+                boardMembers={boardMembers}
+                memberSelectItems={memberSelectItems}
+                onToggleMember={handleToggleMember}
+                onMemberPickerOpen={handleMemberPickerOpen}
+              />
 
-                {task.createdAt && (
-                  <div>
-                    <p className="font-semibold text-gray-500 mb-1.5 uppercase tracking-wide text-[10px]">Created</p>
-                    <p className="text-gray-300 text-xs py-1.5">{formatDate(task?.createdAt)}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Description */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <HiOutlineMenuAlt2 size={16} className="text-gray-400" />
@@ -269,12 +300,17 @@ export default function TaskDetailModal({
               </div>
             </div>
 
-            {/* Sidebar actions */}
             <div className="w-[160px] flex-shrink-0 flex flex-col gap-3">
               <div>
                 <p className="text-[10px] uppercase font-semibold text-gray-500 tracking-wide mb-1.5">Add to card</p>
                 <div className="flex flex-col gap-1">
-                  <SidebarButton icon={<MdOutlinePersonAddAlt size={14} />} label="Members" />
+                  <BaseSelect
+                    items={memberSelectItems}
+                    onOpen={handleMemberPickerOpen}
+                    trigger={<SidebarButton icon={<MdOutlinePersonAddAlt size={14} />} label="Members" />}
+                    triggerClassName="!w-full !h-auto !bg-transparent !p-0 !rounded-none"
+                    dropdownClassName="!bg-[#1e2329] !border-white/10 !shadow-2xl !min-w-[200px]"
+                  />
                 </div>
               </div>
             </div>
@@ -282,14 +318,5 @@ export default function TaskDetailModal({
         </>
       )}
     </BaseModal>
-  );
-}
-
-function SidebarButton({ icon, label }: { icon: React.ReactNode; label: string }) {
-  return (
-    <button className="w-full flex items-center gap-2 px-3 py-1.5 rounded text-xs text-gray-300 bg-white/[0.06] hover:bg-white/[0.12] transition-colors text-left font-medium">
-      <span className="text-gray-400">{icon}</span>
-      {label}
-    </button>
   );
 }

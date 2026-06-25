@@ -121,6 +121,8 @@ export class TaskController {
 
       const task = await this.taskService.getTaskById(boardId, cardId, taskId);
 
+      const assignedMembers = task.assignedMembers || [];
+
       const responseData = {
         id: task.id,
         cardId: task.cardId,
@@ -129,6 +131,7 @@ export class TaskController {
         status: task.status,
         createdAt: task.createdAt,
         updatedAt: task.updatedAt,
+        assignedMembers,
       };
 
       res.status(200).json(responseData);

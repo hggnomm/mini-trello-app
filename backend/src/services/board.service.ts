@@ -185,17 +185,21 @@ export class BoardService implements IBoardService {
 
   async getBoardMembers(boardId: string) {
     const board = await this.boardRepository.findById(boardId);
+    if (!board) throw new Error("Board not found");
 
-    if (!board) {
-      throw new Error("Board not found");
-    }
+    const memberIds = [board.ownerId, ...Object.keys(board.listMembers ?? {})];
 
-    const memberIdsInBoard = [
-      ...new Set([board.ownerId, ...Object.keys(board.listMembers ?? {})]),
-    ];
+    const uniqueMemberIds = [...new Set(memberIds)];
 
-    return Promise.all(
-      memberIdsInBoard.map((userId) => this.userRepository.findById(userId)),
+    const users = await Promise.all(
+      uniqueMemberIds.map((userId) => this.userRepository.findById(userId)),
     );
+
+    return users
+      .filter(
+        (user): user is { id: string; name: string; email: string } =>
+          user !== null,
+      )
+      .map((user) => ({ id: user.id, name: user.name, email: user.email }));
   }
 }

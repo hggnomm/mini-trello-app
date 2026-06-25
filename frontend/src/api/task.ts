@@ -59,3 +59,28 @@ export const reorderTasks = async (
 ): Promise<void> => {
   await axiosInstance.put(`/boards/${boardId}/tasks/reorder`, { tasks });
 };
+
+export const assignMemberToTask = async (
+  boardId: string,
+  cardId: string,
+  taskId: string,
+  memberId: string,
+): Promise<unknown> => {
+  const response = await axiosInstance.post(`/boards/${boardId}/cards/${cardId}/tasks/${taskId}/assign`, { memberId });
+  return response.data;
+};
+
+export const removeMemberFromTask = async (
+  boardId: string,
+  cardId: string,
+  taskId: string,
+  memberId: string,
+): Promise<unknown> => {
+  const response = await axiosInstance.delete(`/boards/${boardId}/cards/${cardId}/tasks/${taskId}/assign/${memberId}`);
+  return response.data;
+};
+
+export const getAllMembersOfTask = async (boardId: string, cardId: string, taskId: string): Promise<unknown> => {
+  const response = await axiosInstance.get(`/boards/${boardId}/cards/${cardId}/tasks/${taskId}/assign`);
+  return response.data;
+};
