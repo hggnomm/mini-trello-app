@@ -69,7 +69,7 @@ function AttachList({ items, loading, saving, onRemove }: AttachListProps) {
 type PickerProps = {
   tab: "issue" | "pull_request" | "commit";
   setTab: (t: "issue" | "pull_request" | "commit") => void;
-  getItems: () => (GitHubPullRequest | GitHubIssue | GitHubCommit)[];
+  getItems: () => GitHubPickerItem[];
   loading: boolean;
   error: string | null;
   saving: boolean;
@@ -79,6 +79,16 @@ type PickerProps = {
   ) => void;
   onClose: () => void;
 };
+
+type GitHubPickerItem = GitHubPullRequest | GitHubIssue | GitHubCommit;
+
+function isGitHubCommit(item: GitHubPickerItem): item is GitHubCommit {
+  return "sha" in item;
+}
+
+function getGitHubItemTitle(item: GitHubPickerItem) {
+  return isGitHubCommit(item) ? item.message : item.title;
+}
 
 function Picker({ tab, setTab, getItems, loading, error, saving, onAttach, onClose }: PickerProps) {
   const tabs: { id: GitHubAttachmentType; label: string }[] = [
@@ -117,18 +127,18 @@ function Picker({ tab, setTab, getItems, loading, error, saving, onAttach, onClo
           !error &&
           items.map((item) => {
             const num = "number" in item ? item.number : null;
-            const title = "title" in item ? item.title : "message" in item ? item.message : "";
+            const title = getGitHubItemTitle(item);
             const url = item.url ?? "";
             const label = num !== null ? `#${num} ${title}` : title;
 
             const handleAttach = () => {
-              const sha = "sha" in item ? item.sha : undefined;
+              const sha = isGitHubCommit(item) ? item.sha : undefined;
               onAttach(tab, num !== null ? { number: num, title, url } : { sha, title, url });
               onClose();
             };
 
             return (
-              <li key={num ?? ("sha" in item ? item.sha : item.url)}>
+              <li key={num ?? (isGitHubCommit(item) ? item.sha : item.url)}>
                 <button
                   type="button"
                   disabled={saving}
