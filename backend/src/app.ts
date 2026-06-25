@@ -9,6 +9,7 @@ import authRoutes from "./routes/auth.route";
 import cardRoutes from "./routes/card.route";
 import taskRoutes from "./routes/task.route";
 import userRoutes from "./routes/user.route";
+import githubAttachmentRoutes from "./routes/github_attachment.route";
 
 import { setupApiDocs } from "./docs/api-docs";
 
@@ -25,6 +26,7 @@ export function createApp(): Express {
   app.use("/boards", boardRoutes);
   app.use("/boards", cardRoutes);
   app.use("/boards", taskRoutes);
+  app.use("/boards", githubAttachmentRoutes);
 
   app.get("/", (req: Request, res: Response) => {
     res.status(200).send("Hello, World!");
