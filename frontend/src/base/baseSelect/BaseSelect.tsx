@@ -91,7 +91,7 @@ const BaseSelect = ({
         ref={triggerRef}
         onClick={toggle}
         className={cn(
-          "inline-flex items-center justify-center w-7 h-7 rounded text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors cursor-pointer",
+          "inline-flex items-center justify-center w-7 h-7 rounded text-gray-200 hover:bg-gray-200 hover:text-gray-800 transition-colors cursor-pointer",
           isOpen && "bg-gray-200 text-gray-800",
           triggerClassName,
         )}
@@ -123,7 +123,7 @@ const BaseSelect = ({
                     close();
                   }}
                   className={cn(
-                    "flex items-center gap-2 px-3 py-2 text-sm text-left text-gray-700 hover:bg-gray-500 hover:text-white transition-colors cursor-pointer w-full",
+                    "flex items-center gap-2 px-3 py-2 text-sm text-left text-gray-300 hover:bg-gray-500 hover:text-white transition-colors cursor-pointer w-full",
                     item.id === selectedId && "font-medium text-white bg-gray-700",
                   )}
                 >

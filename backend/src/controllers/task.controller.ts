@@ -55,7 +55,10 @@ export class TaskController {
 
       try {
         const io = getIo();
-        io.to(`board:${boardId}`).emit(SOCKET_EVENTS.TASK_CREATED, responseData);
+        io.to(`board:${boardId}`).emit(
+          SOCKET_EVENTS.TASK_CREATED,
+          responseData,
+        );
       } catch (err) {
         console.error("Socket emit error:", err);
       }
@@ -124,6 +127,8 @@ export class TaskController {
         title: task.title,
         description: task.description,
         status: task.status,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
       };
 
       res.status(200).json(responseData);
@@ -220,10 +225,7 @@ export class TaskController {
     }
   };
 
-  getAllMembersOfTask = async (
-    req: Request,
-    res: Response,
-  ): Promise<void> => {
+  getAllMembersOfTask = async (req: Request, res: Response): Promise<void> => {
     try {
       const input = this.getTaskParams(req);
 
@@ -242,10 +244,7 @@ export class TaskController {
     }
   };
 
-  removeMemberFromTask = async (
-    req: Request,
-    res: Response,
-  ): Promise<void> => {
+  removeMemberFromTask = async (req: Request, res: Response): Promise<void> => {
     try {
       const { memberId } = req.params;
 

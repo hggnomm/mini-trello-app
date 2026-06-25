@@ -11,6 +11,7 @@ import BaseSelect, { type SelectItem } from "@/base/baseSelect/BaseSelect";
 import { toast } from "react-toastify";
 import { cn } from "@/utils/cn";
 import AddDescription from "@/components/task/AddDescription";
+import { formatDate } from "@/utils/date";
 
 type TaskDetailModalProps = {
   isOpen: boolean;
@@ -97,37 +98,21 @@ export default function TaskDetailModal({
 
   // ─── Handlers ────────────────────────────────────────────────────────────────
 
-  const handleSaveTitle = async () => {
-    if (!task) return;
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) {
-      setTitle(task.title);
-      return;
-    }
-    if (trimmedTitle === task.title) return;
-
-    try {
-      const updated = await updateTask(boardId, currentCardId, task.id, { title: trimmedTitle });
-      toast.success("Title updated");
-      setTask(updated);
-      onTaskUpdated?.(updated);
-    } catch {
-      toast.error("Failed to update title");
-      setTitle(task.title);
-    }
-  };
-
-  const handleSaveDescription = async () => {
-    if (!task) return;
+  const handleSaveTask = async (updates: Partial<Task>, successMsg: string, errorMsg: string) => {
+    if (!task) return false;
     setSaving(true);
     try {
-      const updated = await updateTask(boardId, currentCardId, task.id, { description });
-      toast.success("Description updated");
-      setTask(updated);
-      onTaskUpdated?.(updated);
-      setIsEditingDesc(false);
+      const updated = await updateTask(boardId, currentCardId, task.id, { ...updates });
+
+      toast.success(successMsg);
+      const mergedTask = { ...task, ...updated };
+
+      setTask(mergedTask);
+      onTaskUpdated?.(mergedTask);
+      return true;
     } catch {
-      toast.error("Failed to update description");
+      toast.error(errorMsg);
+      return false;
     } finally {
       setSaving(false);
     }
@@ -135,26 +120,21 @@ export default function TaskDetailModal({
 
   const handleMoveToCard = async (targetCard: Card) => {
     if (targetCard.id === currentCardId || !task) return;
+
     setMovingCard(true);
-    try {
-      const moved = await updateTask(boardId, currentCardId, task.id, { newCardId: targetCard.id });
+
+    const success = await handleSaveTask(
+      { newCardId: targetCard.id },
+      `Moved to "${targetCard.name}"`,
+      "Failed to move task",
+    );
+
+    if (success) {
       setCurrentCardId(targetCard.id);
       setCurrentCardName(targetCard.name);
-      setTask(moved);
-      toast.success(`Moved to "${targetCard.name}"`);
-      onTaskUpdated?.(moved);
-    } catch {
-      toast.error("Failed to move task");
-    } finally {
-      setMovingCard(false);
     }
+    setMovingCard(false);
   };
-
-  const ownerInitials = task?.ownerId?.slice(0, 2).toUpperCase();
-
-  const createdDate = task?.createdAt
-    ? new Date(task.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-    : null;
 
   const cardSelectItems: SelectItem[] = cards.map((card) => ({
     id: card.id,
@@ -165,8 +145,7 @@ export default function TaskDetailModal({
   // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} className="!max-w-[680px]">
-      {/* Top bar: card badge left, close right */}
+    <BaseModal isOpen={isOpen} onClose={onClose} className="!max-w-[800px]" overlayClassName="!items-start !pt-[4rem]">
       <div className="flex items-center justify-between mb-4">
         <BaseSelect
           selectedId={currentCardId}
@@ -203,7 +182,21 @@ export default function TaskDetailModal({
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              onBlur={handleSaveTitle}
+              onBlur={async () => {
+                if (!task) return;
+                const trimmedTitle = title.trim();
+                if (!trimmedTitle) {
+                  setTitle(task.title);
+                  return;
+                }
+                if (trimmedTitle === task.title) return;
+                const success = await handleSaveTask(
+                  { title: trimmedTitle },
+                  "Title updated",
+                  "Failed to update title",
+                );
+                if (!success) setTitle(task.title);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.currentTarget.blur();
@@ -215,20 +208,12 @@ export default function TaskDetailModal({
 
           <div className="flex gap-5">
             {/* Main content */}
-            <div className="flex-1 min-w-0 flex flex-col gap-5">
+            <div className="flex-1 min-w-0 flex flex-col gap-6">
               {/* Members row */}
               <div className="flex flex-wrap gap-4 text-xs text-gray-400">
                 <div>
                   <p className="font-semibold text-gray-500 mb-1.5 uppercase tracking-wide text-[10px]">Members</p>
                   <div className="flex items-center gap-2">
-                    {ownerInitials && (
-                      <div
-                        title={`Owner: ${task.ownerId}`}
-                        className="w-8 h-8 rounded-full bg-[#e53935] flex items-center justify-center text-white text-xs font-bold cursor-pointer hover:ring-2 hover:ring-white/30 transition-all"
-                      >
-                        {ownerInitials}
-                      </div>
-                    )}
                     {task.assignedMembers?.map((memberId) => (
                       <div
                         key={memberId}
@@ -247,10 +232,10 @@ export default function TaskDetailModal({
                   </div>
                 </div>
 
-                {createdDate && (
+                {task.createdAt && (
                   <div>
                     <p className="font-semibold text-gray-500 mb-1.5 uppercase tracking-wide text-[10px]">Created</p>
-                    <p className="text-gray-300 text-xs py-1.5">{createdDate}</p>
+                    <p className="text-gray-300 text-xs py-1.5">{formatDate(task?.createdAt)}</p>
                   </div>
                 )}
               </div>
@@ -265,7 +250,14 @@ export default function TaskDetailModal({
                 <AddDescription
                   value={description}
                   onChange={setDescription}
-                  onSave={handleSaveDescription}
+                  onSave={async () => {
+                    const success = await handleSaveTask(
+                      { description },
+                      "Description updated",
+                      "Failed to update description",
+                    );
+                    if (success) setIsEditingDesc(false);
+                  }}
                   onCancel={() => {
                     setDescription(task.description ?? "");
                     setIsEditingDesc(false);
