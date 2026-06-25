@@ -74,6 +74,12 @@ A full-stack, real-time Kanban board application inspired by Trello — built wi
 <img width="1900" height="909" alt="image" src="https://github.com/user-attachments/assets/38ab14d4-db66-4926-ab13-330fb7c07ca4" />
 ---
 
+
+## 🎥  Video Demo
+
+[Link Video](https://drive.google.com/file/d/10exK-cWW4sOTD7ba48p6tWsop_IOkld7/view?usp=sharing)
+
+---
 ## 📁 Project Structure
 
 ```
