@@ -48,8 +48,8 @@ export default function AddTaskButton({ boardId, cardId, onTaskAdded }: AddTaskB
             }
           }}
         />
-        <div className="flex items-center gap-2">
-          <BaseButton variant="primary" onClick={handleAddTask} disabled={isSubmitting}>
+        <div className="flex items-center gap-3">
+          <BaseButton variant="secondary" onClick={handleAddTask} disabled={isSubmitting}>
             Add task
           </BaseButton>
           <button

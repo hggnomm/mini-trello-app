@@ -48,7 +48,7 @@ export default function AddCardButton({ boardId }: AddCardButtonProps) {
             }
           }}
         />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <BaseButton variant="primary" onClick={handleAddCard} disabled={isCreating}>
             Add card
           </BaseButton>
@@ -57,7 +57,7 @@ export default function AddCardButton({ boardId }: AddCardButtonProps) {
               setIsAdding(false);
               setCardName("");
             }}
-            className="flex items-center justify-center p-1 text-[#A16081] hover:text-white"
+            className="flex items-center justify-center rounded-md p-1 text-[#A16081] hover:text-gray-500"
           >
             <FiX size={20} />
           </button>

@@ -193,6 +193,17 @@ export function useBoard(boardId: string | undefined, profileId: string | undefi
     });
   };
 
+  const handleTaskUpdated = (updatedTask: Task) => {
+    setTasksMap((prev) => {
+      const list = prev[updatedTask.cardId] || [];
+      const updatedList = list.map((t) => (t.id === updatedTask.id ? updatedTask : t));
+      return {
+        ...prev,
+        [updatedTask.cardId]: updatedList,
+      };
+    });
+  };
+
   return {
     board,
     cards,
@@ -200,5 +211,6 @@ export function useBoard(boardId: string | undefined, profileId: string | undefi
     isLoading,
     handleDragEnd,
     handleTaskAdded,
+    handleTaskUpdated,
   };
 }

@@ -21,7 +21,7 @@ export default function BoardView() {
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
-  const { board, cards, tasksMap, isLoading, handleDragEnd, handleTaskAdded } = useBoard(boardId, profile?.id);
+  const { board, cards, tasksMap, isLoading, handleDragEnd, handleTaskAdded, handleTaskUpdated } = useBoard(boardId, profile?.id);
 
   if (isLoading) {
     return (
@@ -56,6 +56,7 @@ export default function BoardView() {
               card={card}
               tasks={tasksMap[card.id] || []}
               onTaskAdded={handleTaskAdded}
+              onTaskUpdated={handleTaskUpdated}
             />
           ))}
 

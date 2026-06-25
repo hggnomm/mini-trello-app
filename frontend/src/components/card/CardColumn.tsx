@@ -10,9 +10,10 @@ interface CardColumnProps {
   card: Card;
   tasks: Task[];
   onTaskAdded?: (task: Task) => void;
+  onTaskUpdated?: (task: Task) => void;
 }
 
-export default function CardColumn({ boardId, card, tasks, onTaskAdded }: CardColumnProps) {
+export default function CardColumn({ boardId, card, tasks, onTaskAdded, onTaskUpdated }: CardColumnProps) {
   return (
     <div className="flex w-[272px] min-w-[272px] max-h-[calc(100vh-140px)] flex-col rounded-md bg-[#0E0F05] p-2.5">
       <div className="mb-2 flex items-center justify-between border-b border-white/10 px-1 pb-2">
@@ -36,7 +37,15 @@ export default function CardColumn({ boardId, card, tasks, onTaskAdded }: CardCo
             )}
           >
             {tasks.map((task, index) => (
-              <TaskItem key={task.id} task={task} index={index} boardId={boardId} cardId={card.id} cardName={card.name} />
+              <TaskItem
+                key={task.id}
+                task={task}
+                index={index}
+                boardId={boardId}
+                cardId={card.id}
+                cardName={card.name}
+                onTaskUpdated={onTaskUpdated}
+              />
             ))}
 
             {provided.placeholder}

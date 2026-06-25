@@ -35,6 +35,7 @@ export default function TaskDetailModal({
   const [loadingTask, setLoadingTask] = useState(false);
 
   const [description, setDescription] = useState("");
+  const [title, setTitle] = useState("");
   const [isEditingDesc, setIsEditingDesc] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -53,9 +54,12 @@ export default function TaskDetailModal({
     const fetchTask = async () => {
       try {
         const data = await getTaskById(boardId, cardId, taskProp.id);
+
         if (cancelled) return;
+
         setTask(data);
         setDescription(data.description ?? "");
+        setTitle(data.title ?? "");
       } catch {
         if (!cancelled) toast.error("Failed to load task details");
       } finally {
@@ -90,6 +94,26 @@ export default function TaskDetailModal({
   };
 
   // ─── Handlers ────────────────────────────────────────────────────────────────
+
+  const handleSaveTitle = async () => {
+    if (!task) return;
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setTitle(task.title);
+      return;
+    }
+    if (trimmedTitle === task.title) return;
+
+    try {
+      const updated = await updateTask(boardId, currentCardId, task.id, { title: trimmedTitle });
+      toast.success("Title updated");
+      setTask(updated);
+      onTaskUpdated?.(updated);
+    } catch {
+      toast.error("Failed to update title");
+      setTitle(task.title);
+    }
+  };
 
   const handleSaveDescription = async () => {
     if (!task) return;
@@ -164,14 +188,27 @@ export default function TaskDetailModal({
         <CloseButton onClick={onClose} className="!relative !top-auto !right-auto" />
       </div>
 
-      {loadingTask ? (
+      {loadingTask && (
         <div className="flex items-center justify-center py-12">
           <BaseSpinner className="!size-8" />
         </div>
-      ) : !task ? null : (
+      )}
+
+      {!loadingTask && task && (
         <>
-          <div className="mb-2">
-            <h2 className="text-[40px] font-semibold text-white leading-snug">{task.title}</h2>
+          <div id="title-task" className="mb-2">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={handleSaveTitle}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.currentTarget.blur();
+                }
+              }}
+              className="w-full bg-transparent text-[40px] font-semibold text-white leading-snug px-2 py-1 rounded border border-transparent focus:border-white focus:outline-none transition-all"
+            />
           </div>
 
           <div className="flex gap-5">
