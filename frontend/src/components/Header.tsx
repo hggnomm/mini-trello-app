@@ -46,9 +46,16 @@ export default function Header() {
         <div className="">
           <PiSquaresFour size={24} color="#9095A1" />
         </div>
-        <div className="flex flex-col items-center justify-center">
-          <img src={logo} alt="Skipli Logo" className="h-[32px] w-auto" />
-        </div>
+        <button className="hover:bg-gray-900 rounded-2xl p-1 flex flex-col items-center justify-center">
+          <img
+            onClick={() => {
+              navigate("/");
+            }}
+            src={logo}
+            alt="Skipli Logo"
+            className="h-[32px] w-auto"
+          />
+        </button>
       </div>
       <div className="relative flex items-center gap-3" ref={userMenuRef}>
         <button
