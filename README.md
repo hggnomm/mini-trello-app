@@ -2,6 +2,9 @@
 
 A beautiful, modern, full-stack monorepo starter configuration for a **Mini Trello App** using **React (Vite)** on the frontend and **Node.js (Express & TypeScript)** on the backend.
 
+This project was developed by me, including the overall system architecture, application design, implementation, and code formatting conventions.
+AI tools were used **only as a supporting resource** for research, learning, brainstorming, and validating technical concepts during development. All core development decisions, source code structure, and implementation were created and reviewed by me.
+
 ## 🚀 Features
 
 - **React + TypeScript**: Clean type-safe interactive interface.
@@ -62,14 +65,24 @@ A full-stack, real-time Kanban board application inspired by Trello — built wi
 
 ## 📸 Screenshots
 
-> Place your screenshots inside the `docs/screenshots/` directory.
-
-| Dashboard      | Board View     | Task Modal     |
-| -------------- | -------------- | -------------- |
-| _(screenshot)_ | _(screenshot)_ | _(screenshot)_ |
-
+<img width="1919" height="907" alt="image" src="https://github.com/user-attachments/assets/2d8ca027-b0d6-4bef-9312-0a8b501718c5" />
+<img width="1918" height="908" alt="image" src="https://github.com/user-attachments/assets/6bda20eb-92e2-4047-8c6b-564a53c81586" />
+<img width="1919" height="914" alt="image" src="https://github.com/user-attachments/assets/795388e6-2781-4223-bd9b-1313937e6da2" />
+<img width="1919" height="907" alt="image" src="https://github.com/user-attachments/assets/c64ba87d-b60b-4d76-8a5b-c17142468065" />
+<img width="1917" height="908" alt="image" src="https://github.com/user-attachments/assets/abe09b7d-4e05-4c4e-afa2-fa48ac82e377" />
+<img width="1919" height="907" alt="image" src="https://github.com/user-attachments/assets/b469e577-71b8-46fe-9bf0-1b51cd55a4a3" />
+<img width="1917" height="907" alt="image" src="https://github.com/user-attachments/assets/c3cd80f2-33c8-4049-9d4a-a4b1ea767af8" />
+<img width="1919" height="907" alt="image" src="https://github.com/user-attachments/assets/bf286f59-259d-4be3-8c57-ebde893dc6b2" />
+<img width="1917" height="908" alt="image" src="https://github.com/user-attachments/assets/11f8ab28-7f23-474e-bd9c-0bc9d33d3e75" />
+<img width="1900" height="909" alt="image" src="https://github.com/user-attachments/assets/38ab14d4-db66-4926-ab13-330fb7c07ca4" />
 ---
 
+
+## 🎥  Video Demo
+
+[Link Video](https://drive.google.com/file/d/10exK-cWW4sOTD7ba48p6tWsop_IOkld7/view?usp=sharing)
+
+---
 ## 📁 Project Structure
 
 ```

@@ -7,6 +7,7 @@ This is a **Monorepo** application consisting of 2 independent workspaces:
 - `frontend/` — Single Page Application (React 19/Vite/TypeScript)
 
 ---
+<img width="994" height="682" alt="image" src="https://github.com/user-attachments/assets/0e9d34f3-2554-4fa2-9d2d-79f2804981eb" />
 
 ## 🔵 BACKEND PATTERNS
 
