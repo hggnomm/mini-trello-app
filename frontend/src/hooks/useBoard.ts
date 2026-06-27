@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import type { DropResult } from "@hello-pangea/dnd";
 
 import { type Board, getBoardById } from "@/api/board";
@@ -12,8 +12,12 @@ import { useBoardSocket } from "@/hooks/useBoardSocket";
 
 export function useBoard(boardId: string | undefined, profileId: string | undefined) {
   const navigate = useNavigate();
+  
+  const { board, setBoard } = useOutletContext<{
+    board: Board | null;
+    setBoard: React.Dispatch<React.SetStateAction<Board | null>>;
+  }>();
 
-  const [board, setBoard] = useState<Board | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
   const [tasksMap, setTasksMap] = useState<Record<string, Task[]>>({});
   const [isLoading, setIsLoading] = useState(true);

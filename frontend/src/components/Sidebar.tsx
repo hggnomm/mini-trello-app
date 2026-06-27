@@ -84,10 +84,14 @@ function SidebarLink({ href, label, icon: Icon, active = false, endContent }: Si
   );
 }
 
-export default function Sidebar() {
+interface SidebarProps {
+  board: Board | null;
+  setBoard: React.Dispatch<React.SetStateAction<Board | null>>;
+}
+
+export default function Sidebar({ board: currentBoard, setBoard: setCurrentBoard }: SidebarProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(true);
-  const [currentBoard, setCurrentBoard] = useState<Board | null>(null);
   const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
   const { boardId } = useParams();
 
