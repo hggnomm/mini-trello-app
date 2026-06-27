@@ -76,8 +76,8 @@ export default function BoardView() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="bg-[#743254] flex items-center justify-between px-4 py-3 shrink-0">
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="bg-[#743254] flex flex-wrap items-center justify-between gap-3 px-4 py-3 shrink-0">
+        <div className="flex items-center xl:flex-row flex-col xl:gap-3 min-w-0 max-w-full">
           <BaseEditableTitle
             value={board.name}
             disabled={!isOwner}
@@ -91,7 +91,7 @@ export default function BoardView() {
                 return false;
               }
             }}
-            className="text-xl font-semibold text-gray-200 truncate px-2 py-1"
+            className="text-xl font-semibold text-gray-200 truncate px-2 py-1 min-w-[200px]"
           />
           {board.githubRepository && (
             <a
@@ -107,19 +107,29 @@ export default function BoardView() {
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1 lg:gap-2">
           {isOwner && (
-            <BaseButton variant="outline" onClick={() => setIsGithubPickerOpen(true)}>
-              <div className="flex items-center gap-2">
-                <SiGithub size={16} />
-                <p>{board.githubRepository ? "Change repository" : "Link GitHub repo"}</p>
+            <BaseButton
+              id="github_repository_button"
+              variant="outline"
+              onClick={() => setIsGithubPickerOpen(true)}
+              className="max-sm:w-8 max-sm:h-8 max-sm:!p-0 max-sm:!rounded-full"
+            >
+              <div className="flex items-center sm:gap-2 whitespace-nowrap">
+                <SiGithub size={16} className="shrink-0" />
+                <p className="hidden sm:block">{board.githubRepository ? "Change repository" : "Link GitHub repo"}</p>
               </div>
             </BaseButton>
           )}
-          <BaseButton variant="outline" onClick={() => setIsInviteModalOpen(true)}>
-            <div className="flex items-center gap-2">
-              <FiUsers size={16} />
-              <p>Invite Member</p>
+          <BaseButton
+            id="invite_member_button"
+            variant="outline"
+            onClick={() => setIsInviteModalOpen(true)}
+            className="max-sm:w-8 max-sm:h-8 max-sm:!p-0 max-sm:!rounded-full"
+          >
+            <div className="flex items-center sm:gap-2 whitespace-nowrap">
+              <FiUsers size={16} className="shrink-0" />
+              <p className="hidden sm:block">Invite Member</p>
             </div>
           </BaseButton>
           {isOwner && (
@@ -162,6 +172,7 @@ export default function BoardView() {
           <AddCardButton boardId={board.id} />
         </div>
       </DragDropContext>
+
       {isInviteModalOpen && (
         <InviteMemberModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} board={board} />
       )}

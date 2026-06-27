@@ -51,7 +51,7 @@ export default function Dashboard() {
   }, [boards]);
 
   return (
-    <div className="mx-auto py-6 max-w-6xl text-gray-200">
+    <div className="mx-auto py-6 px-6 max-w-6xl text-gray-200">
       <h2 className="mb-4 select-none text-xs font-bold uppercase tracking-wider text-gray-400">YOUR WORKSPACES</h2>
 
       {isLoading ? (

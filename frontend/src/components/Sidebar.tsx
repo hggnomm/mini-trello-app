@@ -219,7 +219,7 @@ export default function Sidebar() {
   );
 
   return (
-    <aside className="hidden h-full w-[300px] shrink-0 pr-10 border-white/5 bg-[#2F3840] text-[#dfe1e6] md:flex md:flex-col">
+    <aside className="hidden h-full w-[250px] border-none xl:w-[300px] shrink-0 pr-5 xl:pr-10 bg-[#2F3840] text-[#dfe1e6] md:flex md:flex-col">
       {boardId ? renderBoardSidebar() : renderWorkspaceSidebar()}
     </aside>
   );

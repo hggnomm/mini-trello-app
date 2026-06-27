@@ -111,7 +111,7 @@ export default function GitHubRepoPickerModal({
               href={board.githubRepository.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-gray-500 hover:text-gray-300 mt-0.5 inline-block truncate"
+              className="text-xs leading-none text-gray-500 hover:text-gray-300 mt-0.5 inline-block truncate"
             >
               {board.githubRepository.url}
             </a>
