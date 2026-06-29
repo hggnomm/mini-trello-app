@@ -32,6 +32,7 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (axios.isAxiosError(error)) {
       if (error.response?.status === 401) {
+        return;
         const isAuthPage =
           window.location.pathname.includes(ROUTES.LOGIN) || window.location.pathname.includes(ROUTES.REGISTER);
 
