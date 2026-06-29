@@ -38,6 +38,7 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     };
 
     fetchProfile();
+    
   }, []);
 
   if (isFetching)
