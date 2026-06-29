@@ -92,7 +92,7 @@ export default function InviteMemberModal({ isOpen, onClose, board }: InviteMemb
             />
           )}
         />
-        <BaseButton className="w-20" variant="primary" type="submit" disabled={isSearching} loading={loading}>
+        <BaseButton className="" variant="primary" type="submit" disabled={isSearching} loading={loading}>
           Invite
         </BaseButton>
       </form>
