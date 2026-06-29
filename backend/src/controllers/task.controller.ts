@@ -94,6 +94,7 @@ export class TaskController {
   getBoardTasks = async (req: Request, res: Response): Promise<void> => {
     try {
       const { boardId } = req.params;
+      
       getAuthenticatedUser(req);
 
       const tasks = await this.taskService.getAllTasksForBoard(boardId);

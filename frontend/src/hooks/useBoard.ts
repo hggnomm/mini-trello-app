@@ -210,16 +210,25 @@ export function useBoard(boardId: string | undefined, profileId: string | undefi
   const handleDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
 
+    console.log("source iindex:"+ source.index)
+    console.log("destination:"+ destination)
+
     if (!destination) return;
 
     if (source.droppableId === destination.droppableId && source.index === destination.index) {
       return;
     }
 
+    // start potition
     const sourceCardId = source.droppableId;
+
+    // end potition
     const destCardId = destination.droppableId;
 
     const sourceTasks = Array.from(tasksMap[sourceCardId] || []);
+
+    console.log("source Taks: " + sourceTasks)
+
     const destTasks = sourceCardId === destCardId ? sourceTasks : Array.from(tasksMap[destCardId] || []);
 
     const [movedTask] = sourceTasks.splice(source.index, 1);
@@ -228,7 +237,7 @@ export function useBoard(boardId: string | undefined, profileId: string | undefi
 
     destTasks.splice(destination.index, 0, movedTask);
 
-    // Update order optimistically
+    // Update order   
     destTasks.forEach((task, index) => {
       task.order = index + 1;
     });
